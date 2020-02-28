@@ -107,6 +107,8 @@ if __name__ == '__main__':
         df = get_major_news(src='', start='%s 00:00:00' % d, end='%s 23:59:59' % d)
         if df is not None:
             for key, val in df.iterrows():
+                print(val)
+                exit()
                 sql = 'INSERT INTO s_major_news (title, type, source, creat_date, content, pub_datetime) VALUES (' \
                       '"%s", %s, "%s", "%s", "%s", "%s")' % (val['title'],
                                                              '新闻',
