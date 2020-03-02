@@ -75,7 +75,7 @@ class MyPymysqlPool(BasePymysqlPool):
     # 连接池对象
     __pool = None
 
-    def __init__(self, conf_name='MysqlDatabaseInfo'):
+    def __init__(self, logger, conf_name='MysqlDatabaseInfo'):
         """
         :param conf_name: 配置文件中的配置章节名称
         """
@@ -83,6 +83,7 @@ class MyPymysqlPool(BasePymysqlPool):
         super(MyPymysqlPool, self).__init__(**self.conf)
         self._conn = self.__getConn()
         self._cursor = self._conn.cursor()
+        self._logger = logger
 
     def __getConn(self):
         """
@@ -115,7 +116,7 @@ class MyPymysqlPool(BasePymysqlPool):
             else:
                 count = self._cursor.execute(sql, param)
         except Exception as e:
-            print('SQL语句执行错误: %s - %s' % (sql, e))
+            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
         else:
             if count > 0:
                 result = self._cursor.fetchall()
@@ -135,7 +136,7 @@ class MyPymysqlPool(BasePymysqlPool):
             else:
                 count = self._cursor.execute(sql, param)
         except Exception as e:
-            print('SQL语句执行错误: %s - %s' % (sql, e))
+            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
         else:
             if count > 0:
                 result = self._cursor.fetchone()
@@ -156,7 +157,7 @@ class MyPymysqlPool(BasePymysqlPool):
             else:
                 count = self._cursor.execute(sql, param)
         except Exception as e:
-            print('SQL语句执行错误: %s - %s' % (sql, e))
+            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
         else:
             if count > 0:
                 result = self._cursor.fetchmany(num)
@@ -173,7 +174,7 @@ class MyPymysqlPool(BasePymysqlPool):
         try:
             count = self._cursor.executemany(sql, values)
         except Exception as e:
-            print('SQL语句执行错误: %s - %s' % (sql, e))
+            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
 
         return count
 
@@ -190,7 +191,7 @@ class MyPymysqlPool(BasePymysqlPool):
             else:
                 count = self._cursor.execute(sql, param)
         except Exception as e:
-            print('SQL语句执行错误: %s - %s' % (sql, e))
+            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
 
         return count
 
@@ -225,7 +226,7 @@ class MyPymysqlPool(BasePymysqlPool):
         try:
             self._conn.autocommit(0)
         except Exception as e:
-            print('开启事务出错: %s' % e)
+            self._logger.error('开启事务出错: %s' % e)
 
     def end(self, option='commit'):
         """
@@ -237,7 +238,7 @@ class MyPymysqlPool(BasePymysqlPool):
             else:
                 self._conn.rollback()
         except Exception as e:
-            print('结束事务出错: %s' % e)
+            self._logger.error('结束事务出错: %s' % e)
 
     def dispose(self, end=1):
         """
@@ -251,7 +252,7 @@ class MyPymysqlPool(BasePymysqlPool):
             self._cursor.close()
             self._conn.close()
         except Exception as e:
-            print('释放资源出错: %s' % e)
+            self._logger.error('释放资源出错: %s' % e)
 
 
 # 测试
