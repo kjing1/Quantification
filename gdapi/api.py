@@ -268,7 +268,7 @@ if __name__ == '__main__':
                    SIP_SVR_WAN, WAN_TC, UI_LOGIN_NORMAL, 15)
     print('Login: %d-%s' % (ret, errorStringList[ret]))
 
-    ret = gd_subscribe(dll, handle, 'SZ'.encode('utf-8'), '000001'.encode('utf-8'), RSS_MODE_INC, ID_SZ_TRANSACTION)
+    ret = gd_subscribe(dll, handle, 'SH'.encode('utf-8'), '600000'.encode('utf-8'), RSS_MODE_INC, ID_SH_TRANSACTION)
     print('Subscribe: %d-%s' % (ret, errorStringList[ret]))
 
     while True:

@@ -1,12 +1,12 @@
 # python 3.7.4
-# coding = utf-8
-# filename utils.py
-# author 463714869@qq.com/www.cdzcit.com,
-#        create by VIM at 2019/12/30
+# # coding = utf-8
+# # filename utils.py
+# # author 463714869@qq.com/www.cdzcit.com,
+# #        create by VIM at 2019/12/30
 
 import arrow
-import os
-import functools
+import sys
+import time
 
 
 def isLeapYear(years):
@@ -24,43 +24,57 @@ def isLeapYear(years):
     return days_sum
 
 
-def logto(f, s):
-    with open(os.path.expanduser(f), 'a') as wf:
-        try:
-            wf.write(s)
-        except Exception as e:
-            print('Write %s to %s failure, ignore.' % (s, f))
-
-
-class MyRetry(object):
-    def __init__(self, l='.\\log.txt', n=5):
-        self.logfile = l
-        self.max_retry_num = n
+class RetryDecorator(object):
+    def __init__(self, logger, n=5):
+        self.logger = logger
+        if n > 0:
+            self.max_retry_num = n
+        else:
+            self.max_retry_num = sys.maxsize
 
     def __call__(self, func):
         def _wrapper(*args, **kwargs):
             cnt = 1
-            while cnt <= self.max_retry_num:
+            while cnt <= self.max_etry_num:
                 try:
                     ret = func(*args, **kwargs)
                 except Exception as e:
-                    logto(self.logfile, 'Call->%s get exception: %s, retry: %d->%d\n' % (func.__name__, e, cnt, self.max_retry_num))
+                    self.logger.error('Call->%s get exception: %s, retry: %d->%d\n' % (func.__name__, e, cnt, self.max_retry_num))
                     cnt += 1
                 else:
                     return ret
-            logto(self.logfile, 'Call->%s failure, All try %d times\n' % (func.__name__, cnt - 1))
+            self.logger.error('Call->%s failure, All try %d times\n' % (func.__name__, cnt - 1))
             return None
 
         return _wrapper
 
 
-def getAllDayPerYear(years):
+def Retry(func, logger, retrynum, *args, **kwargs):
+    def _isloop(n, m):
+        if m <= 0:
+            return True
+        else:
+            return n <= m
+    cnt = 1
+    logger.debug('All retry %d times, dest function: %s' % (retrynum, str(func)))
+    while _isloop(cnt, retrynum):
+        try:
+            ret = func(*args, **kwargs)
+        except Exception as e:
+            logger.error('%s execute get error: %s. Try %d times' % (str(func), e, cnt))
+            cnt += 1
+        else:
+            return ret
+    return None
+
+
+def getAllDayPerYear(years, n):
     """
     获取一年的所有日期
     :param years: 年份
     :return: 全部日期列表
     """
-    raise Exception('111')
+    print(n)
 
     start_date = '%s-1-1' % years
     a = 0
@@ -76,8 +90,12 @@ def getAllDayPerYear(years):
 
 
 if __name__ == '__main__':
-    date_list = getAllDayPerYear("2020")
-    if date_list is not None:
-        print(date_list)
-    else:
-        print('Get None')
+    #a = Retry(getAllDayPerYear, 0, 0, '2020', 1)
+    #if a is not None:
+    #    print(a)
+
+    while True:
+        print('\r\\, see log to more information', end='')
+        time.sleep(0.1)
+        print('\r/, see log to more information', end='')
+        time.sleep(0.1)
