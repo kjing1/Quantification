@@ -324,6 +324,8 @@ def mymain(args):
         else:
             threads_list.append(t_adj)
 
+    logger.info('Business thread start completed, all %d threads' % len(threads_list))
+
     def _continueloop(threads):
         for t in threads:
             if t.is_alive():
