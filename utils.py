@@ -56,15 +56,17 @@ def Retry(func, logger, retrynum, *args, **kwargs):
         else:
             return n <= m
     cnt = 1
-    logger.debug('All retry %d times, dest function: %s' % (retrynum, str(func)))
+    logger.debug('Retry %d times, dest function: %s, ARGS: %s' % (retrynum, str(func), args))
     while _isloop(cnt, retrynum):
         try:
             ret = func(*args, **kwargs)
         except Exception as e:
-            logger.error('%s execute get error: %s. Try %d times' % (str(func), e, cnt))
+            logger.error('%s execute get error: %s. Retry %d times' % (str(func), e, cnt))
             cnt += 1
         else:
+            logger.debug('All retry %d times, dest function: %s, ARGS: %s execute successful' % (cnt, str(func), args))
             return ret
+    logger.error('%s all retry %d times, execute failure' % (str(func), cnt))
     return None
 
 
@@ -87,15 +89,3 @@ def getAllDayPerYear(years, n):
         all_date_list.append(b)
 
     return all_date_list
-
-
-if __name__ == '__main__':
-    #a = Retry(getAllDayPerYear, 0, 0, '2020', 1)
-    #if a is not None:
-    #    print(a)
-
-    while True:
-        print('\r\\, see log to more information', end='')
-        time.sleep(0.1)
-        print('\r/, see log to more information', end='')
-        time.sleep(0.1)

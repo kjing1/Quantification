@@ -23,6 +23,8 @@ class Config(object):
 
     def __init__(self, config_filename='dbconfig.cnf'):
         file_path = os.path.join(os.path.dirname(__file__), config_filename)
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(file_path)
         self.cf = configparser.ConfigParser()
         self.cf.read(file_path)
 
@@ -77,6 +79,7 @@ class MyPymysqlPool(BasePymysqlPool):
 
     def __init__(self, logger, conf_name='MysqlDatabaseInfo'):
         """
+        :param logger: 日志对象
         :param conf_name: 配置文件中的配置章节名称
         """
         self.conf = Config().get_content(conf_name)
@@ -118,6 +121,7 @@ class MyPymysqlPool(BasePymysqlPool):
         except Exception as e:
             self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
         else:
+            self._logger.debug('%s : get %d datas' % (__name__, count))
             if count > 0:
                 result = self._cursor.fetchall()
         finally:
@@ -138,6 +142,7 @@ class MyPymysqlPool(BasePymysqlPool):
         except Exception as e:
             self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
         else:
+            self._logger.debug('%s : get %d datas' % (__name__, count))
             if count > 0:
                 result = self._cursor.fetchone()
         finally:
@@ -159,6 +164,7 @@ class MyPymysqlPool(BasePymysqlPool):
         except Exception as e:
             self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
         else:
+            self._logger.debug('%s : get %d datas' % (__name__, count))
             if count > 0:
                 result = self._cursor.fetchmany(num)
         finally:
@@ -176,6 +182,7 @@ class MyPymysqlPool(BasePymysqlPool):
         except Exception as e:
             self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
 
+        self._logger.debug('%s : insert %d datas' % (__name__, count))
         return count
 
     def __query(self, sql, param=None):
