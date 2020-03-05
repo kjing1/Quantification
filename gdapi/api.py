@@ -151,7 +151,59 @@ def gd_login(inst, handle, uesrname, password, serverip, port, nettype, netopera
     return ret
 
 
-def gd_subscribe(inst, handle, mcode, scode, mode, serviceid):
+def gd_subscribe_by_market(inst, handle, mcode, mode, serviceid):
+    """
+    通过证券代码订阅实时行情
+    :param inst: dll句柄
+    :param handle: 光大库句柄
+    :param mcode: 市场代码
+                    HQD_MARKET_SH = 1 # 上海交易所
+                    HQD_MARKET_SZ = 2 # 深圳交易所
+                    HQD_MARKET_CFFEX = 3 # 中金所
+                    HQD_MARKET_CZCE = 4 # 郑商所
+                    HQD_MARKET_DCE = 5 # 大商所
+                    HQD_MARKET_SHFE = 6 # 上期所
+                    HQD_MARKET_ZZZS = 7 # 中证指数行情市场
+                    HQD_MARKET_SHOP = 8  # 上交所期权
+                    HQD_MARKET_HK = 9  # 香港市场
+                    HQD_MARKET_SZOP = 11 # 深交所期权
+                    HQD_MARKET_SGE = 12 # 上海黄金市场
+                    HQD_MARKET_SHHK = 13 # 香港市场？
+                    HQD_MARKET_NEEQ = 15 # 新三板市场
+                    HQD_MARKET_JTZX = 16 # 静态咨询
+    :param mode: 订阅模式
+                    RSS_MODE_NEW = 0  # 最新订阅
+                    RSS_MODE_INC = 1  # 增量订阅
+    :param serviceid: 服务编码
+                    HQD_MARKET_SH = 1 # 上海交易所
+                        ID_SH_INDEXDATA = 0x00  # 指数(Stock_IndexData)
+                        ID_SH_TRANSACTION = 0x01  # 成交(Stock_Transaction)
+                        ID_SH_ORDERQUEUE = 0x02  # 委托队列(Stock_OrderQueue_Head+Stock_OrderQueue)
+                        ID_SH_MARKETDATA = 0x04  # 行情数据(Stock_MarketData)
+                        ID_SH_MARKETDATA_L1 = 0x05  # 用于L1行情 上海(Stock_MarketData_L1)
+                        ID_SH_KLINEDATA = 0x07  # 上交所个股分钟K线数据(T_SH_Kline)
+                    HQD_MARKET_SZ = 2
+                        ID_SZ_INDEXDATA = 0x00  # 指数(Stock_IndexData)
+                        ID_SZ_TRANSACTION = 0x01  # 成交(Stock_TransactionEx)
+                        ID_SZ_ORDERQUEUE = 0x02  # 委托队列(Stock_OrderQueue_Head+Stock_OrderQueue)
+                        ID_SZ_STEPORDER = 0x03  # 逐笔委托(Stock_StepOrder)
+                        ID_SZ_MARKETDATA = 0x04  # 行情数据(Stock_MarketData)
+                        ID_SZ_MARKETDATA_L1 = 0x06  # 用于V5 L1行情 深圳(Stock_MarketData_L1)
+                        ID_SZ_KLINEDATA = 0x07  # 深交所个股分钟K线数据(T_SZ_Kline)
+                        ID_SZ_QDHQDATA = 0x08  # 深交所千档行情数据(t_SZ_QDHQData)
+    :return: 0 - 成功，其他 - 失败
+    """
+    inst.TDR_SubscribeByMarket.restypes = ctypes.c_int
+    inst.TDR_SubscribeByMarket.argtypes = [ctypes.c_int64,
+                                           ctypes.c_char_p,
+                                           ctypes.c_int,
+                                           ctypes.c_int]
+    ret = inst.TDR_SubscribeByMarket(handle, mcode, mode, serviceid)
+    LOGGER.info('ret=%s，信息：%s' % (ret, errorStringList[ret]))
+    return ret
+
+
+def gd_subscribe_by_code(inst, handle, mcode, scode, mode, serviceid):
     """
     通过证券代码订阅实时行情
     :param inst: dll句柄
@@ -205,7 +257,72 @@ def gd_subscribe(inst, handle, mcode, scode, mode, serviceid):
     return ret
 
 
+def gd_subscribe_by_group(inst, handle, mcode, scode, mode, serviceid):
+    """
+    通过证券代码订阅实时行情
+    :param inst: dll句柄
+    :param handle: 光大库句柄
+    :param mcode: 市场代码
+                    HQD_MARKET_SH = 1 # 上海交易所
+                    HQD_MARKET_SZ = 2 # 深圳交易所
+                    HQD_MARKET_CFFEX = 3 # 中金所
+                    HQD_MARKET_CZCE = 4 # 郑商所
+                    HQD_MARKET_DCE = 5 # 大商所
+                    HQD_MARKET_SHFE = 6 # 上期所
+                    HQD_MARKET_ZZZS = 7 # 中证指数行情市场
+                    HQD_MARKET_SHOP = 8  # 上交所期权
+                    HQD_MARKET_HK = 9  # 香港市场
+                    HQD_MARKET_SZOP = 11 # 深交所期权
+                    HQD_MARKET_SGE = 12 # 上海黄金市场
+                    HQD_MARKET_SHHK = 13 # 香港市场？
+                    HQD_MARKET_NEEQ = 15 # 新三板市场
+                    HQD_MARKET_JTZX = 16 # 静态咨询
+    :param scode: 证券代码
+    :param mode: 订阅模式
+                    RSS_MODE_NEW = 0  # 最新订阅
+                    RSS_MODE_INC = 1  # 增量订阅
+    :param serviceid: 服务编码
+                    HQD_MARKET_SH = 1 # 上海交易所
+                        ID_SH_INDEXDATA = 0x00  # 指数(Stock_IndexData)
+                        ID_SH_TRANSACTION = 0x01  # 成交(Stock_Transaction)
+                        ID_SH_ORDERQUEUE = 0x02  # 委托队列(Stock_OrderQueue_Head+Stock_OrderQueue)
+                        ID_SH_MARKETDATA = 0x04  # 行情数据(Stock_MarketData)
+                        ID_SH_MARKETDATA_L1 = 0x05  # 用于L1行情 上海(Stock_MarketData_L1)
+                        ID_SH_KLINEDATA = 0x07  # 上交所个股分钟K线数据(T_SH_Kline)
+                    HQD_MARKET_SZ = 2
+                        ID_SZ_INDEXDATA = 0x00  # 指数(Stock_IndexData)
+                        ID_SZ_TRANSACTION = 0x01  # 成交(Stock_TransactionEx)
+                        ID_SZ_ORDERQUEUE = 0x02  # 委托队列(Stock_OrderQueue_Head+Stock_OrderQueue)
+                        ID_SZ_STEPORDER = 0x03  # 逐笔委托(Stock_StepOrder)
+                        ID_SZ_MARKETDATA = 0x04  # 行情数据(Stock_MarketData)
+                        ID_SZ_MARKETDATA_L1 = 0x06  # 用于V5 L1行情 深圳(Stock_MarketData_L1)
+                        ID_SZ_KLINEDATA = 0x07  # 深交所个股分钟K线数据(T_SZ_Kline)
+                        ID_SZ_QDHQDATA = 0x08  # 深交所千档行情数据(t_SZ_QDHQData)
+    :return: 0 - 成功，其他 - 失败
+    """
+    inst.TDR_SubscribeByGroup.restypes = ctypes.c_int
+    inst.TDR_SubscribeByGroup.argtypes = [ctypes.c_int64,
+                                         ctypes.c_char_p,
+                                         ctypes.c_char_p,
+                                         ctypes.c_int,
+                                         ctypes.c_int]
+    ret = inst.TDR_SubscribeByGroup(handle, mcode, scode, mode, serviceid)
+    LOGGER.info('ret=%s，信息：%s' % (ret, errorStringList[ret]))
+    return ret
+
+
 def gd_getdata(inst, handle, mcode, scode, serviceid, pdata, datalen):
+    """
+    订阅模式，主动在内存中取数据
+    :param inst: DLL实例
+    :param handle: 光大库句柄
+    :param mcode: 市场代码，见gd_subscribe
+    :param scode: 证券代码
+    :param serviceid: 服务ID，见gd_subscribe
+    :param pdata: 数据缓存区
+    :param datalen: 数据长度
+    :return: 获取到的数据长度
+    """
     inst.TDR_GetMarketData.restypes = ctypes.c_int
     inst.TDR_GetMarketData.argtypes = [ctypes.c_int64,
                                        ctypes.c_char_p,
@@ -223,6 +340,7 @@ def gd_getdata(inst, handle, mcode, scode, serviceid, pdata, datalen):
 def gd_unsubscribe(inst, handle):
     inst.TDR_UnsubscribeAll.restypes = ctypes.c_int
     inst.TDR_UnsubscribeAll.argtypes = [ctypes.c_int64]
+    ret = inst.TDR_UnsubscribeAll(handle)
     LOGGER.info('ret=%s，信息：%s' % (ret, errorStringList[ret]))
     return ret
 
@@ -243,7 +361,7 @@ def gd_disconnect(inst, handle):
     return ret
 
 
-def gd_distroy(inst, handle):
+def gd_destroy(inst, handle):
     inst.TDR_Destroy.restypes = ctypes.c_int
     inst.TDR_Destroy.argtypes = [ctypes.c_int64]
     ret = inst.TDR_Destroy(handle)
@@ -258,7 +376,6 @@ PORT = 9888
 USER = 'gdzq_jinshi'
 PWD = 'test123456'
 
-
 if __name__ == '__main__':
     dll, handle = init_inst(DLLDIR, DLLPATH)
     if dll is None or handle is None:
@@ -268,7 +385,7 @@ if __name__ == '__main__':
                    SIP_SVR_WAN, WAN_TC, UI_LOGIN_NORMAL, 15)
     print('Login: %d-%s' % (ret, errorStringList[ret]))
 
-    ret = gd_subscribe(dll, handle, 'SH'.encode('utf-8'), '600000'.encode('utf-8'), RSS_MODE_INC, ID_SH_TRANSACTION)
+    ret = gd_subscribe_by_group(dll, handle, 'SZ'.encode('utf-8'), '000001,000002'.encode('utf-8'), RSS_MODE_INC, ID_SZ_MARKETDATA)
     print('Subscribe: %d-%s' % (ret, errorStringList[ret]))
 
     while True:
@@ -284,5 +401,5 @@ if __name__ == '__main__':
     ret = gd_disconnect(dll, handle)
     print('Disconnect: %d-%s' % (ret, errorStringList[ret]))
 
-    ret = gd_distroy(dll, handle)
+    ret = gd_destroy(dll, handle)
     print('Distroy: %d-%s' % (ret, errorStringList[ret]))

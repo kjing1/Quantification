@@ -501,11 +501,8 @@ def insert_fq_daily_to_db_by_tscode(logger, pro, conn, startdate, enddate, stock
     for stock in stocks_list:
         df = Retry(ts.pro_bar, logger, retry,
                    ts_code=stock, start_date=startdate, end_date=enddate, adj=adj, asset=asset)
-        print(len(df))
         if df is not None:
             for key, val in df.iterrows():
-                print(val)
-                exit()
                 sql = 'INSERT INTO t_daily_%s (ts_code, trade_date, `open`, high, low, `close`, pre_close, `change`, ' \
                       'pct_chg, vol, ' \
                       'amount) VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s") ' % (
