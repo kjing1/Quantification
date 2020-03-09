@@ -12,6 +12,7 @@ import threading
 import argparse
 import sys
 import os
+from t_daily_t_daily_index_sync import index_sync
 
 
 # 获取前复权日行情
@@ -201,11 +202,10 @@ def mymain(args):
         print('Init tushare error, exit')
         exit(1)
     # 链接数据库
-    conn_tmp = dbpool.MyPymysqlPool(logger, 'MysqlDatabaseInfo')
+    conn_sync = dbpool.MyPymysqlPool(logger, 'MysqlDatabaseInfo')
     # 获取股票ts代码
-    for d in conn_tmp.getAll('select ts_code from t_stocks'):
+    for d in conn_sync.getAll('select ts_code from t_stocks'):
         stocks_list.append(d['ts_code'])
-    conn_tmp.dispose()
 
     logger.info('----%s begin----' % time.strftime('%Y%m%d %H%M%S', time.localtime(time.time())))
 
@@ -397,6 +397,10 @@ def mymain(args):
     now = time.time()
     while _continueloop(threads_list):
         time.sleep(1)
+
+    logger.info('Sync daily quotation and indexs')
+    index_sync(logger, conn, stocks_list, tradedate=startdate)
+    conn_sync.dispose()
     logger.info('----Complete in [%d] seconds----' % (time.time() - now))
 
 

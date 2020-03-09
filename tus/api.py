@@ -524,6 +524,8 @@ def insert_fq_daily_to_db_by_tscode(logger, pro, conn, startdate, enddate, stock
                 else:
                     logger.error('%s : %d-%s insert failure. SQL: %s' % (__name__, key, val['ts_code'], sql))
             conn.end(option='commit')
+        # pro_bar limits 1000t/m
+        time.sleep(0.5)
     logger.info('%s all insert %d datas' % (__name__, cnt))
     return cnt
 
@@ -569,6 +571,8 @@ def insert_fq_weekly_to_db_by_tscode(logger, pro, conn, startdate, enddate, stoc
                 else:
                     logger.error('%s : %d-%s insert failure. SQL: %s' % (__name__, key, val['ts_code'], sql))
             conn.end(option='commit')
+        # pro_bar limits 1000t/m
+        time.sleep(0.5)
     logger.info('%s all insert %d datas' % (__name__, cnt))
     return cnt
 
@@ -614,6 +618,8 @@ def insert_fq_monthly_to_db_by_tscode(logger, pro, conn, startdate, enddate, sto
                 else:
                     logger.error('%s : %d-%s insert failure. SQL: %s' % (__name__, key, val['ts_code'], sql))
             conn.end(option='commit')
+        # pro_bar limits 1000t/m
+        time.sleep(0.5)
     logger.info('%s all insert %d datas' % (__name__, cnt))
     return cnt
 

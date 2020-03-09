@@ -15,38 +15,27 @@ import os
 
 logdir = '/opt/quantification/logs'
 
-if __name__ == '__main__':
-    stocks_list = []
-    threads_list = []
+
+def index_sync(logger, conn, stocks_list, tradedate=''):
     cnt = 0
-    # 初始化日志
-    if not os.path.exists(os.path.expanduser(logdir)):
-        os.mkdir(os.path.expanduser(logdir))
-    logger = log.init_logging(
-        os.path.join(os.path.expanduser(logdir), '%s_%s.txt' % ('sync',
-                                                                time.strftime('%Y%m%d',
-                                                                              time.localtime(time.time())))),
-        'info')
-    conn = dbpool.MyPymysqlPool(logger, 'MysqlDatabaseInfo')
-    # 获取股票ts代码
-    for d in conn.getAll('select ts_code from t_stocks'):
-        stocks_list.append(d['ts_code'])
-
-    today = time.strftime('%Y%m%d', time.localtime(time.time()))
-    logger.info('-------------%s begin-------------')
-    logger.info('All %d stocks' % len(stocks_list))
-
     for stock in stocks_list:
         logger.info('Get trade_date from %s' % stock)
-        daily_datas = conn.getAll('SELECT ts_code, trade_date from t_daily where ts_code="%s"' % stock)
+        if tradedate == '':
+            sql1 = 'SELECT ts_code, trade_date from t_daily where ts_code="%s"' % stock
+        else:
+            sql1 = 'SELECT ts_code, trade_date from t_daily where ts_code="%s" and trade_date="%s"' % (stock, tradedate)
+        daily_datas = conn.getAll(sql1)
         logger.debug('%d datas' % len(daily_datas))
+        if len(daily_datas) < 1:
+            logger.info('Not found daily quotation by %s from %s' % (stock, tradedate))
+            continue
         for data in daily_datas:
             logger.info('Get index data by %s-%s' % (data['ts_code'], data['trade_date']))
             index_datas = conn.getAll('SELECT * from t_daily_index where ts_code="%s" and trade_date="%s"' %
                                       (data['ts_code'], data['trade_date']))
             logger.debug('%d index datas' % len(index_datas))
             if len(index_datas) != 1:
-                logger.error('Index data error')
+                logger.error('Not found index daily by %s from %s' %  (stock, tradedate))
                 continue
             up = 'UPDATE t_daily SET ' \
                  'turnover_rate = "%s",' \
@@ -89,4 +78,29 @@ if __name__ == '__main__':
                 logger.error('Update error, SQL: %s' % up)
 
     logger.info('All updated %d datas' % cnt)
+
+
+if __name__ == '__main__':
+    stocks_list = []
+    threads_list = []
+    cnt = 0
+    # 初始化日志
+    if not os.path.exists(os.path.expanduser(logdir)):
+        os.mkdir(os.path.expanduser(logdir))
+    logger = log.init_logging(
+        os.path.join(os.path.expanduser(logdir), '%s_%s.txt' % ('sync',
+                                                                time.strftime('%Y%m%d',
+                                                                              time.localtime(time.time())))),
+        'info')
+    conn = dbpool.MyPymysqlPool(logger, 'MysqlDatabaseInfo')
+    # 获取股票ts代码
+    for d in conn.getAll('select ts_code from t_stocks'):
+        stocks_list.append(d['ts_code'])
+
+    index_sync(logger, conn, stocks_list)
+
+    today = time.strftime('%Y%m%d', time.localtime(time.time()))
+    logger.info('-------------%s begin-------------')
+    logger.info('All %d stocks' % len(stocks_list))
+
     conn.dispose()
