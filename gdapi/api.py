@@ -36,7 +36,9 @@ def set_OnReceiveData(pUserParam, nDate, nMarketId, sCode, sName, uType, nServic
     g = (ctypes.c_char * nLen).from_address(pData)
     ret_mds = FromMdarec(nMarketId, nServiceId, g[0:nLen], nLen)
     LOGGER.info('get all %d datas' % len(ret_mds))
-    if len(ret_mds) > 0:    pprint(ret_mds[0])
+    # if len(ret_mds) > 0:    pprint(ret_mds[0])
+    for data in ret_mds:
+        LOGGER.info('{}'.format(data))
 
 
 # 注册数据回调C函数
@@ -385,9 +387,10 @@ if __name__ == '__main__':
                    SIP_SVR_WAN, WAN_TC, UI_LOGIN_NORMAL, 15)
     print('Login: %d-%s' % (ret, errorStringList[ret]))
 
-    ret = gd_subscribe_by_group(dll, handle, 'SZ'.encode('utf-8'), '000001,000002'.encode('utf-8'), RSS_MODE_INC, ID_SZ_MARKETDATA)
+    ret = gd_subscribe_by_group(dll, handle, 'SZ'.encode('utf-8'), '128053,113555,123034,113510'.encode('utf-8'), RSS_MODE_INC, ID_SZ_MARKETDATA)
     print('Subscribe: %d-%s' % (ret, errorStringList[ret]))
 
+    """
     while True:
         if gd_isconnected(dll, handle):
             print('Connected, wait TRANSACTIONS...')
@@ -403,3 +406,4 @@ if __name__ == '__main__':
 
     ret = gd_destroy(dll, handle)
     print('Distroy: %d-%s' % (ret, errorStringList[ret]))
+    """

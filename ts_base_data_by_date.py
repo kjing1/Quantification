@@ -399,7 +399,7 @@ def mymain(args):
         time.sleep(1)
 
     logger.info('Sync daily quotation and indexs')
-    index_sync(logger, conn, stocks_list, tradedate=startdate)
+    index_sync(logger, conn_sync, stocks_list, tradedate=startdate)
     conn_sync.dispose()
     logger.info('----Complete in [%d] seconds----' % (time.time() - now))
 

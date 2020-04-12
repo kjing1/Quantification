@@ -7,6 +7,7 @@
 import arrow
 import sys
 import time
+from typing import Any, Dict, List
 
 
 def isLeapYear(years):
@@ -25,25 +26,24 @@ def isLeapYear(years):
 
 
 class RetryDecorator(object):
-    def __init__(self, logger, n=5):
-        self.logger = logger
-        if n > 0:
-            self.max_retry_num = n
+    def __init__(self, retry: int = 5, intv: int = 1) -> None:
+        if retry > 0:
+            self.max_retry_num = retry
         else:
             self.max_retry_num = sys.maxsize
+        self.intv_ = intv
 
-    def __call__(self, func):
+    def __call__(self, func) -> Any:
         def _wrapper(*args, **kwargs):
             cnt = 1
             while cnt <= self.max_etry_num:
                 try:
                     ret = func(*args, **kwargs)
                 except Exception as e:
-                    self.logger.error('Call->%s get exception: %s, retry: %d->%d\n' % (func.__name__, e, cnt, self.max_retry_num))
                     cnt += 1
+                    time.sleep(self.intv_)
                 else:
                     return ret
-            self.logger.error('Call->%s failure, All try %d times\n' % (func.__name__, cnt - 1))
             return None
 
         return _wrapper
@@ -67,6 +67,25 @@ def Retry(func, logger, retrynum, *args, **kwargs):
             logger.debug('All retry %d times, dest function: %s, ARGS: %s execute successful' % (cnt, str(func), args))
             return ret
     logger.error('%s all retry %d times, execute failure' % (str(func), cnt))
+    return None
+
+
+def funcRetry(func, retry, intv, *args, **kwargs):
+    def _isloop(n, m):
+        if m <= 0:
+            return True
+        else:
+            return n <= m
+    cnt = 1
+    while _isloop(cnt, retry):
+        try:
+            ret = func(*args, **kwargs)
+        except Exception as e:
+            cnt += 1
+            if intv:
+                time.sleep(intv)
+        else:
+            return ret
     return None
 
 

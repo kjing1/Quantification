@@ -7,21 +7,18 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import tensorflow as tf
 from tensorflow.keras import layers, models
-import tensorflow.keras.backend as K
-from tensorflow.keras.callbacks import Callback, TensorBoard
-from tensorflow.keras.regularizers import l2
-import os
-import numpy as np
 
 
-def create_base_model(inp_shape=(300, 10), gru_units=512, dropout=0.2):
-    img_inputs = tf.keras.Input(name='stocks_inputs', shape=inp_shape)
+def create_model(inp_shape=(5, 19), gru_units=32, dropout=0.8):
+    q_inputs = tf.keras.Input(name='q_inputs', shape=inp_shape)
 
-    x = layers.Bidirectional(layers.GRU(gru_units, return_sequences=True))(img_inputs)
-    x = layers.Bidirectional(layers.GRU(gru_units, return_sequences=True))(x)
+    x = layers.Bidirectional(layers.GRU(gru_units, return_sequences=True))(q_inputs)
+    x = layers.Dropout(dropout)(x)
+    x = layers.Bidirectional(layers.GRU(gru_units, return_sequences=False))(x)
+    x = layers.Dropout(dropout)(x)
 
-    classes_prob = layers.Dense(1, activation='softmax', name='cls_prob')(x)
-    model = tf.keras.Model(inputs=img_inputs, outputs=classes_prob)
+    close = layers.Dense(1, activation='linear', name='close')(x)
+    model = tf.keras.Model(inputs=q_inputs, outputs=close)
 
     model.summary()
 

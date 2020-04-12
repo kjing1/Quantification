@@ -13,7 +13,7 @@ import argparse
 import sys
 import os
 
-logdir = '/opt/quantification/logs'
+logdir = 'C:\\Users\\Admin\\Documents\\ZCIT-Projects\\PythonProj\\Quantification\\logs'
 
 
 def index_sync(logger, conn, stocks_list, tradedate=''):
@@ -25,10 +25,10 @@ def index_sync(logger, conn, stocks_list, tradedate=''):
         else:
             sql1 = 'SELECT ts_code, trade_date from t_daily where ts_code="%s" and trade_date="%s"' % (stock, tradedate)
         daily_datas = conn.getAll(sql1)
-        logger.debug('%d datas' % len(daily_datas))
-        if len(daily_datas) < 1:
+        if daily_datas is None:
             logger.info('Not found daily quotation by %s from %s' % (stock, tradedate))
             continue
+        logger.debug('%d datas' % len(daily_datas))
         for data in daily_datas:
             logger.info('Get index data by %s-%s' % (data['ts_code'], data['trade_date']))
             index_datas = conn.getAll('SELECT * from t_daily_index where ts_code="%s" and trade_date="%s"' %
@@ -81,6 +81,9 @@ def index_sync(logger, conn, stocks_list, tradedate=''):
 
 
 if __name__ == '__main__':
+    date_list = ['20200311', '20200312', '20200313', '20200314', '20200315', '20200316', '20200317',
+                 '20200318', '20200319', '20200320', '20200321', '20200322', '20200323', '20200324',
+                 '20200325', '20200326', '20200327', '20200328', '20200329', '20200330']
     stocks_list = []
     threads_list = []
     cnt = 0
@@ -97,7 +100,8 @@ if __name__ == '__main__':
     for d in conn.getAll('select ts_code from t_stocks'):
         stocks_list.append(d['ts_code'])
 
-    index_sync(logger, conn, stocks_list)
+    for d in date_list:
+        index_sync(logger, conn, stocks_list, d)
 
     today = time.strftime('%Y%m%d', time.localtime(time.time()))
     logger.info('-------------%s begin-------------')
