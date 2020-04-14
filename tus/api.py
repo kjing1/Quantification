@@ -118,22 +118,30 @@ class tusApi:
                               'is_hs')
         return df
 
+    # TODO: 增加按日期范围获取数据
     def getSuspendStocksByDate(self, trade_date):
         """
         获取指定日期停盘的股票信息
         :param trade_date: 日期, 格式: 20200202
         :return: df, 出错返回None
         """
-        df = funcRetry(self.pro.suspend_d, self.retry, self.intv, trade_date=trade_date, suspend_type='S')
+        df = funcRetry(self.pro.suspend_d, self.retry, self.intv,
+                       trade_date=trade_date,
+                       suspend_type='S',
+                       fields='ts_code, trade_date, suspend_timing, suspend_type')
         return df
 
+    # TODO: 增加按日期范围获取数据
     def getRestartStocksByDate(self, trade_date):
         """
         获取指定日期复盘的股票信息
         :param trade_date: 日期, 格式: 20200202
         :return: df, 出错返回None
         """
-        df = funcRetry(self.pro.suspend_d, self.retry, self.intv, trade_date=trade_date, suspend_type='R')
+        df = funcRetry(self.pro.suspend_d, self.retry, self.intv,
+                       trade_date=trade_date,
+                       suspend_type='R',
+                       fields='ts_code, trade_date, suspend_timing, suspend_type')
         return df
 
     def getSignalStockMoneyFlowByDate(self, stock_code, start_date, end_date):
@@ -145,7 +153,11 @@ class tusApi:
         :return: 资金流向df, 出错返回None
         """
         df = funcRetry(self.pro.moneyflow, self.retry, self.intv,
-                       ts_code=stock_code, start_date=start_date, end_date=end_date)
+                       ts_code=stock_code, start_date=start_date, end_date=end_date,
+                       fields='ts_code,trade_date,buy_sm_vol,buy_sm_amount,sell_sm_vol,sell_sm_amount,buy_md_vol,'
+                              'buy_md_amount,sell_md_vol,sell_md_amount,buy_lg_vol,buy_lg_amount,sell_lg_vol,'
+                              'sell_lg_amount,buy_elg_vol,buy_elg_amount,sell_elg_vol,sell_elg_amount,net_mf_vol,'
+                              'net_mf_amount')
         return df
 
     def getAllStockMoneyFlowByDate(self, trade_date):
@@ -154,7 +166,11 @@ class tusApi:
         :param trade_date: 日期, 格式: 20200202
         :return: 资金流向df, 出错返回None
         """
-        df = funcRetry(self.pro.moneyflow, self.retry, self.intv, trade_date=trade_date)
+        df = funcRetry(self.pro.moneyflow, self.retry, self.intv, trade_date=trade_date,
+                       fields='ts_code,trade_date,buy_sm_vol,buy_sm_amount,sell_sm_vol,sell_sm_amount,buy_md_vol,'
+                              'buy_md_amount,sell_md_vol,sell_md_amount,buy_lg_vol,buy_lg_amount,sell_lg_vol,'
+                              'sell_lg_amount,buy_elg_vol,buy_elg_amount,sell_elg_vol,sell_elg_amount,net_mf_vol,'
+                              'net_mf_amount')
         return df
 
     def getSignalStockLimitPriceByDate(self, stock_code, start_date, end_date):
@@ -166,7 +182,8 @@ class tusApi:
         :return: 涨跌停df, 出错返回None
         """
         df = funcRetry(self.pro.stk_limit, self.retry, self.intv,
-                       ts_code=stock_code, start_date=start_date, end_date=end_date)
+                       ts_code=stock_code, start_date=start_date, end_date=end_date,
+                       fields='trade_date,ts_code,pre_close,up_limit,down_limit')
         return df
 
     def getAllStockLimitPriceByDate(self, trade_date):
@@ -175,10 +192,11 @@ class tusApi:
         :param trade_date: 日期, 格式: 20200202
         :return: 涨跌停df, 出错返回None
         """
-        df = funcRetry(self.pro.stk_limit, self.retry, self.intv, trade_date=trade_date)
+        df = funcRetry(self.pro.stk_limit, self.retry, self.intv, trade_date=trade_date,
+                       fields='trade_date,ts_code,pre_close,up_limit,down_limit')
         return df
 
-    def getLimitUpStocksByDate(self, trade_date):
+    def getAllStockLimitUpStocksByDate(self, trade_date):
         """
         获取指定日期涨停的股票
         :param trade_date: 日期, 格式: 20200202
@@ -203,7 +221,36 @@ class tusApi:
                               'limit')
         return df
 
-    def getLimitDownStocksByDate(self, trade_date):
+    def getSignalStockLimitUpStocksByDate(self, stock_code, start_date, end_date):
+        """
+        获取指定日期涨停的股票
+        :param end_date:
+        :param start_date:
+        :param stock_code:
+        :return: 股票df, 出错返回None
+        """
+        df = funcRetry(self.pro.limit_list, self.retry, self.intv,
+                       ts_code=stock_code,
+                       start_date=start_date,
+                       end_date=end_date,
+                       limit_type='U',
+                       fields='trade_date,'
+                              'ts_code,'
+                              'name,'
+                              'close,'
+                              'pct_chg,'
+                              'amp,'
+                              'fc_ratio,'
+                              'fl_ratio,'
+                              'fd_amount,'
+                              'first_time,'
+                              'last_time,'
+                              'open_times,'
+                              'strth,'
+                              'limit')
+        return df
+
+    def getAllStockLimitDownStocksByDate(self, trade_date):
         """
         获取指定日期跌停的股票
         :param trade_date: 日期, 格式: 20200202
@@ -211,6 +258,35 @@ class tusApi:
         """
         df = funcRetry(self.pro.limit_list, self.retry, self.intv,
                        trade_date=trade_date,
+                       limit_type='D',
+                       fields='trade_date,'
+                              'ts_code,'
+                              'name,'
+                              'close,'
+                              'pct_chg,'
+                              'amp,'
+                              'fc_ratio,'
+                              'fl_ratio,'
+                              'fd_amount,'
+                              'first_time,'
+                              'last_time,'
+                              'open_times,'
+                              'strth,'
+                              'limit')
+        return df
+
+    def getSignalStockLimitDownStocksByDate(self, stock_code, start_date, end_date):
+        """
+        获取指定日期跌停的股票
+        :param end_date:
+        :param start_date:
+        :param stock_code:
+        :return: 股票df, 出错返回None
+        """
+        df = funcRetry(self.pro.limit_list, self.retry, self.intv,
+                       ts_code=stock_code,
+                       start_date=start_date,
+                       end_date=end_date,
                        limit_type='D',
                        fields='trade_date,'
                               'ts_code,'
@@ -455,7 +531,8 @@ class tusApi:
         :param stock_code: 股票代码, 例如: 000001.SZ
         :return: 管理层信息df, 出错返回None
         """
-        df = funcRetry(self.pro.stk_managers, self.retry, self.intv, ts_code=stock_code)
+        df = funcRetry(self.pro.stk_managers, self.retry, self.intv, ts_code=stock_code,
+                       fields='ts_code,ann_date,name,gender,lev,title,edu,national,birthday,begin_date,end_date,resume')
         return df
 
     def getAllStockTradeCalendarByDate(self, start_date, end_date):
@@ -466,7 +543,8 @@ class tusApi:
         :return: 交易日历df, 出错返回None
         """
         df = funcRetry(self.pro.trade_cal, self.retry, self.intv,
-                       exchange='', start_date=start_date, end_date=end_date)
+                       exchange='', start_date=start_date, end_date=end_date,
+                       fields='exchange,cal_date,is_open,pretrade_date')
         return df
 
     def getSignalStockProfitByDate(self, stock_code, start_date, end_date):
@@ -923,7 +1001,6 @@ class tusApi:
                               'update_flag')
         return df
 
-    # TODO:
     def getSignalStockCashflowByDate(self, stock_code, start_date, end_date):
         """
         获取单只股票指定时间段的现金流量表数据
@@ -1027,7 +1104,6 @@ class tusApi:
                               'update_flag')
         return df
 
-    # TODO:
     def getAllStockCashflowByDate(self, start_date, end_date):
         """
         获取全部股票指定时间段的现金流量表数据
@@ -1130,7 +1206,6 @@ class tusApi:
                               'update_flag')
         return df
 
-    # TODO:
     def getSignalStockExpressNewsByDate(self, stock_code, start_date, end_date):
         """
         获取单只股票指定时间段的业绩快讯表数据
@@ -1175,7 +1250,6 @@ class tusApi:
                               'remark')
         return df
 
-    # TODO:
     def getAllStockExpressNewsByDate(self, start_date, end_date):
         """
         获取全部股票指定时间段的业绩快讯表数据
@@ -1219,7 +1293,6 @@ class tusApi:
                               'remark')
         return df
 
-    # TODO:
     def getSignalStockFinanceIndicatorByDate(self, stock_code, start_date, end_date):
         """
         获取单只股票指定时间段的财务指标数据
@@ -1399,7 +1472,6 @@ class tusApi:
                               'update_flag')
         return df
 
-    # TODO:
     def getAllStockFinanceIndicatorByDate(self, start_date, end_date):
         """
         获取单只股票指定时间段的财务指标数据
@@ -1578,66 +1650,83 @@ class tusApi:
                               'update_flag')
         return df
 
-    # TODO:
     def getTopList(self, trade_date):
         """
         根据日期获取龙虎榜
         :param trade_date: 日期, 格式: 20200202
         :return: 龙虎榜df, 出错返回None
         """
-        df = funcRetry(self.pro.top_list, self.retry, self.intv, trade_date=trade_date)
+        df = funcRetry(self.pro.top_list, self.retry, self.intv, trade_date=trade_date,
+                       fields='trade_date,ts_code,name,close,pct_change,turnover_rate,amount,l_sell,l_buy,l_amount,'
+                              'net_amount,net_rate,amount_rate,float_values,reason')
         return df
 
-    # TODO:
     def getTopListTradeDetail(self, trade_date):
         """
         根据日期获取龙虎榜机构交易明细
         :param trade_date: 日期, 格式: 20200202
         :return: 龙虎榜交易明细df, 出错返回None
         """
-        df = funcRetry(self.pro.top_inst, self.retry, self.intv, trade_date=trade_date)
+        df = funcRetry(self.pro.top_inst, self.retry, self.intv, trade_date=trade_date,
+                       fields='trade_date,ts_code,exalter,buy,buy_rate,sell,sell_rate,net_buy')
         return df
 
-    # TODO:
     def getConcept(self):
         """
         获取概念股分类明细
         :return: 概念股df, 出错返回None
         """
-        df = funcRetry(self.pro.concept, self.retry, self.intv)
+        df = funcRetry(self.pro.concept, self.retry, self.intv, src='ts', fields='code,name,src')
         return df
 
-    # TODO:
     def getConceptByStock(self, stock_code):
         """
         查询某只股票的所属概念
         :param stock_code: 股票代码, 例如: 000001.SZ
         :return: 概念股df, 出错返回None
         """
-        df = funcRetry(self.pro.concept_detail, self.retry, self.intv, ts_code=stock_code)
+        df = funcRetry(self.pro.concept_detail, self.retry, self.intv,
+                       ts_code=stock_code,
+                       fields='id,concept_name,ts_code,name,in_date,out_date')
         return df
 
-    # TODO:
+    # TODO: 批量业务？
     def getConceptById(self, concept_id):
         """
         根据概念分类ID获取所有股票
         :param concept_id: getConcept返回的概念ID
         :return: 概念股df, 出错返回None
         """
-        df = funcRetry(self.pro.concept_detail, self.retry, self.intv, id=concept_id)
+        df = funcRetry(self.pro.concept_detail, self.retry, self.intv,
+                       id=concept_id,
+                       fields='id,concept_name,ts_code,name,in_date,out_date')
         return df
 
-    # TODO:
-    def getBigTradeDetailByDate(self, trade_date):
+    def getAllStockBigTradeDetailByDate(self, trade_date):
         """
         根据日期获取当日大宗交易明细
         :param trade_date: 交易日期, 格式: 20200202
         :return: 大宗交易df, 出错返回None
         """
-        df = funcRetry(self.pro.block_trade, self.retry, self.intv, trade_date=trade_date)
+        df = funcRetry(self.pro.block_trade, self.retry, self.intv, trade_date=trade_date,
+                       fields='ts_code,trade_date,price,vol,amount,buyer,seller')
         return df
 
-    # TODO:
+    def getSignalStockBigTradeDetailByDate(self, stock_code, start_date, end_date):
+        """
+        根据日期获取当日大宗交易明细
+        :param end_date:
+        :param start_date:
+        :param stock_code:
+        :return: 大宗交易df, 出错返回None
+        """
+        df = funcRetry(self.pro.block_trade, self.retry, self.intv,
+                       ts_code=stock_code,
+                       start_date=start_date,
+                       end_date=end_date,
+                       fields='ts_code,trade_date,price,vol,amount,buyer,seller')
+        return df
+
     def getIndexBasicInformation(self, market):
         """
         根据指定市场获取所有指数信息
@@ -1651,10 +1740,12 @@ class tusApi:
                         OTH	其他指数
         :return: 基础指数信息df, 出错返回None
         """
-        df = funcRetry(self.pro.index_basic, self.retry, self.intv, market=market)
+        df = funcRetry(self.pro.index_basic, self.retry, self.intv,
+                       market=market,
+                       fields='ts_code,name,fullname,market,publisher,index_type,category,base_date,base_point,'
+                              'list_date,weight_rule,desc,exp_date')
         return df
 
-    # TODO:
     def getSignalIndexDailyQuantByDate(self, index_code, start_date, end_date):
         """
         获取单只指数在指定时间段的原始日行情
@@ -1678,7 +1769,6 @@ class tusApi:
                               'amount')
         return df
 
-    # TODO:
     def getAllIndexDailyQuantByDate(self, trade_date):
         """
         获取所有指数在指定时间的原始日行情
@@ -1700,7 +1790,6 @@ class tusApi:
                               'amount')
         return df
 
-    # TODO:
     def getSignalIndexWeeklyQuantByDate(self, index_code, start_date, end_date):
         """
         获取单只指数在指定时间段的原始周行情
@@ -1726,7 +1815,6 @@ class tusApi:
                               'amount')
         return df
 
-    # TODO:
     def getAllIndexWeeklyQuantByDate(self, trade_date):
         """
         获取单只指数在指定时间段的原始周行情
@@ -1748,7 +1836,6 @@ class tusApi:
                               'amount')
         return df
 
-    # TODO:
     def getSignalIndexMonthlyQuantByDate(self, index_code, start_date, end_date):
         """
         获取单只指数在指定时间段的原始月行情
@@ -1774,7 +1861,6 @@ class tusApi:
                               'amount')
         return df
 
-    # TODO:
     def getAllIndexMonthlyQuantByDate(self, trade_date):
         """
         获取单只指数在指定时间段的原始月行情
@@ -1796,8 +1882,7 @@ class tusApi:
                               'amount')
         return df
 
-    # TODO:
-    def getIndexDailyIndicator(self, trade_date):
+    def getAllIndexDailyIndicatorByDate(self, trade_date):
         """
         根据日期获取大盘指数的每日指标
         :param trade_date: 日期, 格式: 20200202
@@ -1819,24 +1904,52 @@ class tusApi:
                               'pb')
         return df
 
-    # TODO:
+    def getSignalIndexDailyIndicatorByDate(self, stock_code, start_date, end_date):
+        """
+        根据日期获取大盘指数的每日指标
+        :param end_date:
+        :param start_date:
+        :param stock_code:
+        :return: 每日指标df, 出错返回None
+        """
+        df = funcRetry(self.pro.index_dailybasic, self.retry, self.intv,
+                       ts_code=stock_code,
+                       start_date=start_date,
+                       end_date=end_date,
+                       fields='ts_code,'
+                              'trade_date,'
+                              'total_mv,'
+                              'float_mv,'
+                              'total_share,'
+                              'float_share,'
+                              'free_share,'
+                              'turnover_rate,'
+                              'turnover_rate_f,'
+                              'pe,'
+                              'pe_ttm,'
+                              'pb')
+        return df
+
     def getSWClassify(self, level):
         """
         获取申万L1、L2、L3的分类数据
         :param level: str, L1、L2、L3
         :return: 分类df, 出错返回None
         """
-        df = funcRetry(self.pro.index_classify, self.retry, self.intv, level=level, src='SW')
+        df = funcRetry(self.pro.index_classify, self.retry, self.intv,
+                       level=level,
+                       src='SW',
+                       fields='index_code,industry_name,level,industry_code,src')
         return df
 
-    # TODO:
     def getStockSWIndustry(self, stock_code):
         """
         查询某只股票的申万行业信息
         :param stock_code: 股票代码, 例如: 000001.SZ
         :return: 行业信息df, 出错返回None
         """
-        df = funcRetry(self.pro.index_member, self.retry, self.intv, ts_code=stock_code)
+        df = funcRetry(self.pro.index_member, self.retry, self.intv, ts_code=stock_code,
+                       fields='index_code,index_name,con_code,con_name,in_date,out_date,is_new')
         return df
 
     # TODO:
@@ -1846,10 +1959,10 @@ class tusApi:
         :param index_code: 申万行业分类代码, 例如: 801020.SI
         :return: 成分股df, 出错返回None
         """
-        df = funcRetry(self.pro.index_member, self.retry, self.intv, index_code=index_code)
+        df = funcRetry(self.pro.index_member, self.retry, self.intv, index_code=index_code,
+                       fields='index_code,index_name,con_code,con_name,in_date,out_date,is_new')
         return df
 
-    # TODO:
     def getTradeSummaryByDate(self, trade_date):
         """
         获取指定日期各交易所的交易汇总信息
@@ -1874,3 +1987,60 @@ class tusApi:
                               'tr,'
                               'exchange')
         return df
+
+    def getTradeSummaryByDateRange(self, start_date, end_date):
+        """
+        获取指定日期各交易所的交易汇总信息
+        :param end_date:
+        :param start_date:
+        :return: 交易汇总df, 出错返回None
+        """
+        df = funcRetry(self.pro.daily_info, self.retry, self.intv,
+                       start_date=start_date,
+                       end_date=end_date,
+                       exchange='SZ,SH',
+                       fields='trade_date,'
+                              'ts_code,'
+                              'ts_name,'
+                              'com_count,'
+                              'total_share,'
+                              'float_share,'
+                              'total_mv,'
+                              'float_mv,'
+                              'amount,'
+                              'vol,'
+                              'trans_count,'
+                              'pe,'
+                              'tr,'
+                              'exchange')
+        return df
+
+    def methods(self):
+        return list(
+            filter(lambda m: not m.startswith("__") and not m.endswith("__") and callable(getattr(self, m)), dir(self)))
+
+
+if __name__ == '__main__':
+    api = tusApi(MYTOKEN)
+    print(api.getSignalIndexDailyIndicatorByDate('000001.SH', '20100101', '20200414'))
+    exit()
+    print(api.getSignalStockBalanceSheetByDate('000001.SZ', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalStockCashflowByDate('000001.SZ', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalStockLimitPriceByDate('000001.SZ', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getAllStockTradeCalendarByDate('20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalStockProfitByDate('000001.SZ', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalStockExpressNewsByDate('000001.SZ', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalStockFinanceIndicatorByDate('000001.SZ', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalIndexDailyQuantByDate('000001.SH', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalIndexWeeklyQuantByDate('000001.SH', '20100101', '20200414'))
+    time.sleep(2)
+    print(api.getSignalIndexMonthlyQuantByDate('000001.SH', '20100101', '20200414'))
+    time.sleep(2)

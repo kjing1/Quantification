@@ -8,6 +8,7 @@ import arrow
 import sys
 import time
 from typing import Any, Dict, List
+import pandas as pd
 
 
 def isLeapYear(years):
@@ -85,7 +86,8 @@ def funcRetry(func, retry, intv, *args, **kwargs):
             if intv:
                 time.sleep(intv)
         else:
-            return ret
+            # 解决df格式nan的问题
+            return ret.astype(object).where(pd.notnull(ret), None)
     return None
 
 

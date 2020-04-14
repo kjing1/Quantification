@@ -204,6 +204,8 @@ class MyPymysqlPool(BasePymysqlPool):
         :return: count受影响的行数
         """
         count = 0
+        if not values:
+            return count
         _conn = self._pool.connection()
         _cursor = _conn.cursor()
         try:
