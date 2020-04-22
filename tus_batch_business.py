@@ -58,31 +58,30 @@ class batchBusiness(tusApi):
               ' date,' \
               ' de_date,' \
               ' is_hs) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        values = []
         df = self.getAllStockBaseInformation()
         if df is None:
             self.logger.error('[getAllStockBaseInformation] -> get None, retry')
         else:
             for key, val in df.iterrows():
-                values.append([val['ts_code'],
-                               val['symbol'],
-                               val['name'],
-                               val['area'],
-                               val['industry'],
-                               val['fullname'],
-                               val['enname'],
-                               val['market'],
-                               val['exchange'],
-                               val['curr_type'],
-                               val['list_status'],
-                               val['list_date'],
-                               val['delist_date'],
-                               val['is_hs']])
-            ret = self.dbconn.insertMany(sql, values)
-            if ret == len(values):
-                self.logger.info('insert %d data to database' % ret)
-            else:
-                self.logger.warn('insert to database may be some errors, all insert %d' % ret)
+                values = [[val['ts_code'],
+                           val['symbol'],
+                           val['name'],
+                           val['area'],
+                           val['industry'],
+                           val['fullname'],
+                           val['enname'],
+                           val['market'],
+                           val['exchange'],
+                           val['curr_type'],
+                           val['list_status'],
+                           val['list_date'],
+                           val['delist_date'],
+                           val['is_hs']]]
+                ret = self.dbconn.insertMany(sql, values)
+                if ret == len(values):
+                    self.logger.info('insert %d data to database' % ret)
+                else:
+                    self.logger.warning('insert to database may be some errors, all insert %d' % ret)
 
     def getAllIndexCodeFromDatabase(self):
         all_fetched = self.dbconn.getAll('SELECT ts_code FROM t_index_base')
@@ -90,7 +89,7 @@ class batchBusiness(tusApi):
             for d in all_fetched:
                 self.index_list.append(d['ts_code'])
         else:
-            self.logger.warn('get None')
+            self.logger.warning('get None')
 
     def getAllStockCodeFromDatabase(self):
         all_fetched = self.dbconn.getAll('SELECT ts_code FROM t_stocks')
@@ -98,7 +97,7 @@ class batchBusiness(tusApi):
             for d in all_fetched:
                 self.stock_list.append(d['ts_code'])
         else:
-            self.logger.warn('get None')
+            self.logger.warning('get None')
 
     def insertDailyQuantToDatabaseByDateRange(self):
         count = 0
@@ -157,7 +156,7 @@ class batchBusiness(tusApi):
             else:
                 self.logger.error('insert to database get some error: %d' % ret)
         else:
-            self.logger.warn('[getAllStockDailyQuantByDate] -> get None')
+            self.logger.warning('[getAllStockDailyQuantByDate] -> get None')
 
     def insertWeeklyQuantToDatabaseByDateRange(self):
         count = 0
@@ -296,7 +295,7 @@ class batchBusiness(tusApi):
 
         count = 0
         err = 0
-        sql = 'INSERT INTO s_flash_news (type, source, creat_date, content, pub_datetime) VALUES (' \
+        sql = 'INSERT INTO t_flash_news (type, source, creat_date, content, pub_datetime) VALUES (' \
               '%s, %s, %s, %s, %s)'
         cls = ''
         for s in src:
@@ -333,7 +332,7 @@ class batchBusiness(tusApi):
         self.logger.info('all insert %d datas to database and %d errors' % (count, err))
 
     def insertMojorNewsToDatabase(self):
-        sql = 'INSERT INTO s_information (title, type, source, creat_date, content, pub_datetime) VALUES (' \
+        sql = 'INSERT INTO t_information (title, type, source, creat_date, content, pub_datetime) VALUES (' \
               '%s, %s, %s, %s, %s, %s)'
         df = self.getMajorNews('%s-%s-%s 00:00:00' % (self.start_date[0:4],
                                                       self.start_date[4:6],
@@ -737,33 +736,32 @@ class batchBusiness(tusApi):
               ' main_business,' \
               ' business_scope) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         for e in exc:
-            values = []
             df = self.getCompanyBaseInformationByExchange(e)
             if df is not None:
                 for key, val in df.iterrows():
-                    values.append([val['ts_code'],
-                                   val['exchange'],
-                                   val['chairman'],
-                                   val['manager'],
-                                   val['secretary'],
-                                   val['reg_capital'],
-                                   val['setup_date'],
-                                   val['province'],
-                                   val['city'],
-                                   val['introduction'],
-                                   val['website'],
-                                   val['email'],
-                                   val['office'],
-                                   val['employees'],
-                                   val['main_business'],
-                                   val['business_scope']])
-                ret = self.dbconn.insertMany(sql, values)
-                if ret == len(values):
-                    self.logger.debug('%s insert %d datas to database' % (e, ret))
-                    count += ret
-                else:
-                    self.logger.error('%s insert data to database get some error: %d' % (e, ret))
-                    err += len(values)
+                    values = [[val['ts_code'],
+                               val['exchange'],
+                               val['chairman'],
+                               val['manager'],
+                               val['secretary'],
+                               val['reg_capital'],
+                               val['setup_date'],
+                               val['province'],
+                               val['city'],
+                               val['introduction'],
+                               val['website'],
+                               val['email'],
+                               val['office'],
+                               val['employees'],
+                               val['main_business'],
+                               val['business_scope']]]
+                    ret = self.dbconn.insertMany(sql, values)
+                    if ret == len(values):
+                        self.logger.debug('%s insert %d datas to database' % (e, ret))
+                        count += ret
+                    else:
+                        self.logger.error('%s insert data to database get some error: %d' % (e, ret))
+                        err += len(values)
             else:
                 self.logger.error('[getCompanyBaseInformationByExchange] -> get None')
         self.logger.info('all insert %d datas to database and %d errors' % (count, err))
@@ -1160,29 +1158,28 @@ class batchBusiness(tusApi):
               ' end_date,' \
               ' resume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         for stock_code in self.stock_list:
-            values = []
             df = self.getCompanyManagers(stock_code)
             if df is not None:
                 for key, val in df.iterrows():
-                    values.append([val['ts_code'],
-                                   val['ann_date'],
-                                   val['name'],
-                                   val['gender'],
-                                   val['lev'],
-                                   val['title'],
-                                   val['edu'],
-                                   val['national'],
-                                   val['birthday'],
-                                   val['begin_date'],
-                                   val['end_date'],
-                                   val['resume']])
-                ret = self.dbconn.insertMany(sql, values)
-                if ret == len(values):
-                    self.logger.debug('%s insert %d datas to database' % (stock_code, ret))
-                    count += ret
-                else:
-                    self.logger.error('%s insert data to database get some error: %d' % (stock_code, ret))
-                    err += len(values)
+                    values = [[val['ts_code'],
+                               val['ann_date'],
+                               val['name'],
+                               val['gender'],
+                               val['lev'],
+                               val['title'],
+                               val['edu'],
+                               val['national'],
+                               val['birthday'],
+                               val['begin_date'],
+                               val['end_date'],
+                               val['resume']]]
+                    ret = self.dbconn.insertMany(sql, values)
+                    if ret == len(values):
+                        self.logger.debug('%s insert %d datas to database' % (stock_code, ret))
+                        count += ret
+                    else:
+                        self.logger.error('%s insert data to database get some error: %d' % (stock_code, ret))
+                        err += len(values)
             else:
                 self.logger.error('[getCompanyManagers] -> get None')
         self.logger.info('all insert %d datas to database and %d errors' % (count, err))
@@ -2711,30 +2708,29 @@ class batchBusiness(tusApi):
               'base_point, list_date, weight_rule, `desc`, exp_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
               '%s, %s, %s) '
         for m in self.market:
-            values = []
             df = self.getIndexBasicInformation(m)
             if df is not None:
                 for key, val in df.iterrows():
-                    values.append([val['ts_code'],
-                                   val['name'],
-                                   val['fullname'],
-                                   val['market'],
-                                   val['publisher'],
-                                   val['index_type'],
-                                   val['category'],
-                                   val['base_date'],
-                                   val['base_point'],
-                                   val['list_date'],
-                                   val['weight_rule'],
-                                   val['desc'],
-                                   val['exp_date']])
-                ret = self.dbconn.insertMany(sql, values)
-                if ret == len(values):
-                    self.logger.debug('%s insert %d datas to database' % (m, ret))
-                    count += ret
-                else:
-                    self.logger.error('%s insert data to database get some error: %d' % (m, ret))
-                    err += len(values)
+                    values = [[val['ts_code'],
+                               val['name'],
+                               val['fullname'],
+                               val['market'],
+                               val['publisher'],
+                               val['index_type'],
+                               val['category'],
+                               val['base_date'],
+                               val['base_point'],
+                               val['list_date'],
+                               val['weight_rule'],
+                               val['desc'],
+                               val['exp_date']]]
+                    ret = self.dbconn.insertMany(sql, values)
+                    if ret == len(values):
+                        self.logger.debug('%s insert %d datas to database' % (m, ret))
+                        count += ret
+                    else:
+                        self.logger.error('%s insert data to database get some error: %d' % (m, ret))
+                        err += len(values)
             else:
                 self.logger.error('[getIndexBasicInformation] -> get None')
         self.logger.info('all insert %d datas to database and %d errors' % (count, err))
@@ -2796,7 +2792,7 @@ class batchBusiness(tusApi):
             else:
                 self.logger.error('insert to database get some error: %d' % ret)
         else:
-            self.logger.warn('[getAllIndexDailyQuantByDate] -> get None')
+            self.logger.warning('[getAllIndexDailyQuantByDate] -> get None')
 
     def insertIndexWeeklyQuantToDatabaseByDateRange(self):
         count = 0
@@ -2855,7 +2851,7 @@ class batchBusiness(tusApi):
             else:
                 self.logger.error('insert to database get some error: %d' % ret)
         else:
-            self.logger.warn('[getAllIndexWeeklyQuantByDate] -> get None')
+            self.logger.warning('[getAllIndexWeeklyQuantByDate] -> get None')
 
     def insertIndexMonthlyQuantToDatabaseByDateRange(self):
         count = 0
@@ -2914,7 +2910,7 @@ class batchBusiness(tusApi):
             else:
                 self.logger.error('insert to database get some error: %d' % ret)
         else:
-            self.logger.warn('[getAllIndexMonthlyQuantByDate] -> get None')
+            self.logger.warning('[getAllIndexMonthlyQuantByDate] -> get None')
 
     def insertIndexIndicatorToDatabaseByDateRange(self):
         sql = 'INSERT INTO t_index_indicator (ts_code, trade_date, total_mv, float_mv, total_share, float_share, ' \
@@ -3337,6 +3333,12 @@ def runForDate(args):
                         retry=args.retry,
                         intv=args.intv)
 
+    # 更新基础数据
+    api.insertCompanyBaseInformationToDatabaseByExchange()
+    api.insertCompanyManagersToDatabase()
+    api.insertStockBaseInformationToDatabase()
+    api.insertIndexBaseInformationToDatabase()
+
     # 线程
     if args.daily_quotation:
         addTask(threads_list, logger, api.insertDailyQuantToDatabaseByDate, ())
@@ -3426,8 +3428,18 @@ def runForDate(args):
 
 if __name__ == '__main__':
     # 同步基础数据: --sw_class_stock True --sw_class True --concept True --concept_stocks True --company_base True
-    # --company_managers True 同步指数、财务等行情: --limit_price True --limit_up True --limit_down True
+    # --company_managers True
+    # 同步指数、财务等行情: --limit_price True --limit_up True --limit_down True
     # --money_flow True --trader_cal True --profit True --big_trade True
     # --balance_sheet True --cash_flow True --exp_news True --fin_indicator True --index_daily True --index_weekly
     # True --index_monthly True --index_daily_ind True --startdate 20100101 --enddate 20200414
-    runForDateRange(parse_arguments(sys.argv[1:]))
+    # runForDateRange(parse_arguments(sys.argv[1:]))
+    # 每日同步: --daily_quotation True --weekly_quotation True --monthly_quotation True --qfq_daily_quotation True
+    # --hfq_daily_quotation True --qfq_weekly_quotation True --hfq_weekly_quotation True --qfq_monthly_quotation True
+    # --hfq_monthly_quotation True --daily_index True -adj_factor True --index_base True --limit_up True --limit_down
+    # True --limit_price True --money_flow True --company_base True --company_managers True --trader_cal True
+    # --profit True --balance_sheet True --cash_flow True --exp_news True --fin_indicator True --top_list True
+    # --top_list_detail True --concept_stocks True --big_trade True --index_daily True --index_weekly True
+    # --index_monthly True --index_daily_ind True --sw_class_stock True --trade_sum True --logdir /opt/ --loglevel
+    # info --startdate '' --enddate '' --trade_date '' --retry 5 --intv 0.5
+    runForDate(parse_arguments(sys.argv[1:]))

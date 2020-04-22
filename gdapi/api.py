@@ -384,7 +384,7 @@ if __name__ == '__main__':
         print('Cannot load dll from: %s' % DLLPATH)
 
     ret = gd_login(dll, handle, USER, PWD, SERVER, PORT,
-                   SIP_SVR_WAN, WAN_TC, UI_LOGIN_NORMAL, 15)
+                   SIP_SVR_WAN, WAN_TC, UI_LOGIN_NORMAL, 120)
     print('Login: %d-%s' % (ret, errorStringList[ret]))
 
     ret = gd_subscribe_by_group(dll, handle, 'SZ'.encode('utf-8'), '128053,113555,123034,113510'.encode('utf-8'), RSS_MODE_INC, ID_SZ_MARKETDATA)
