@@ -36,7 +36,10 @@ def set_OnReceiveData(pUserParam, nDate, nMarketId, sCode, sName, uType, nServic
     g = (ctypes.c_char * nLen).from_address(pData)
     ret_mds = FromMdarec(nMarketId, nServiceId, g[0:nLen], nLen)
     LOGGER.info('get all %d datas' % len(ret_mds))
-    if len(ret_mds) > 0:    pprint(ret_mds[0])
+    if len(ret_mds) > 0:
+        print(sName)
+        print(uType)
+        pprint(ret_mds[0])
 
 
 # 注册数据回调C函数
@@ -251,8 +254,8 @@ def gd_distroy(inst, handle):
     return ret
 
 
-DLLDIR = 'C:\\Users\\Admin\\Documents\\ZCIT-Projects\\PythonProj\\Quantification\\gdapi\\dll'
-DLLPATH = 'C:\\Users\\Admin\\Documents\\ZCIT-Projects\\PythonProj\\Quantification\\gdapi\\dll\\sipuicom64.dll'
+DLLDIR = '/Users/a11/PycharmProjects/Quantification/gdapi/dll'
+DLLPATH = '/Users/a11/PycharmProjects/Quantification/gdapi/dll/sipuicom64.dll'
 SERVER = '116.236.247.183'
 PORT = 9888
 USER = 'gdzq_jinshi'
@@ -268,7 +271,7 @@ if __name__ == '__main__':
                    SIP_SVR_WAN, WAN_TC, UI_LOGIN_NORMAL, 15)
     print('Login: %d-%s' % (ret, errorStringList[ret]))
 
-    ret = gd_subscribe(dll, handle, 'SH'.encode('utf-8'), '600000'.encode('utf-8'), RSS_MODE_INC, ID_SH_TRANSACTION)
+    ret = gd_subscribe(dll, handle, 'SZ'.encode('utf-8'), '113555'.encode('utf-8'), RSS_MODE_INC, ID_SZ_MARKETDATA)
     print('Subscribe: %d-%s' % (ret, errorStringList[ret]))
 
     while True:
