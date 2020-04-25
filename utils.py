@@ -7,6 +7,8 @@
 import arrow
 import sys
 import time
+from typing import Any, Dict, List
+import pandas as pd
 
 
 def isLeapYear(years):
@@ -25,25 +27,24 @@ def isLeapYear(years):
 
 
 class RetryDecorator(object):
-    def __init__(self, logger, n=5):
-        self.logger = logger
-        if n > 0:
-            self.max_retry_num = n
+    def __init__(self, retry: int = 5, intv: int = 1) -> None:
+        if retry > 0:
+            self.max_retry_num = retry
         else:
             self.max_retry_num = sys.maxsize
+        self.intv_ = intv
 
-    def __call__(self, func):
+    def __call__(self, func) -> Any:
         def _wrapper(*args, **kwargs):
             cnt = 1
             while cnt <= self.max_etry_num:
                 try:
                     ret = func(*args, **kwargs)
                 except Exception as e:
-                    self.logger.error('Call->%s get exception: %s, retry: %d->%d\n' % (func.__name__, e, cnt, self.max_retry_num))
                     cnt += 1
+                    time.sleep(self.intv_)
                 else:
                     return ret
-            self.logger.error('Call->%s failure, All try %d times\n' % (func.__name__, cnt - 1))
             return None
 
         return _wrapper
@@ -56,15 +57,37 @@ def Retry(func, logger, retrynum, *args, **kwargs):
         else:
             return n <= m
     cnt = 1
-    logger.debug('All retry %d times, dest function: %s' % (retrynum, str(func)))
+    logger.debug('Retry %d times, dest function: %s, ARGS: %s' % (retrynum, str(func), args))
     while _isloop(cnt, retrynum):
         try:
             ret = func(*args, **kwargs)
         except Exception as e:
-            logger.error('%s execute get error: %s. Try %d times' % (str(func), e, cnt))
+            logger.error('%s execute get error: %s. Retry %d times' % (str(func), e, cnt))
             cnt += 1
         else:
+            logger.debug('All retry %d times, dest function: %s, ARGS: %s execute successful' % (cnt, str(func), args))
             return ret
+    logger.error('%s all retry %d times, execute failure' % (str(func), cnt))
+    return None
+
+
+def funcRetry(func, retry, intv, *args, **kwargs):
+    def _isloop(n, m):
+        if m <= 0:
+            return True
+        else:
+            return n <= m
+    cnt = 1
+    while _isloop(cnt, retry):
+        try:
+            ret = func(*args, **kwargs)
+        except Exception as e:
+            cnt += 1
+            if intv:
+                time.sleep(intv)
+        else:
+            # 解决df格式nan的问题
+            return ret.astype(object).where(pd.notnull(ret), None)
     return None
 
 
@@ -87,15 +110,3 @@ def getAllDayPerYear(years, n):
         all_date_list.append(b)
 
     return all_date_list
-
-
-if __name__ == '__main__':
-    #a = Retry(getAllDayPerYear, 0, 0, '2020', 1)
-    #if a is not None:
-    #    print(a)
-
-    while True:
-        print('\r\\, see log to more information', end='')
-        time.sleep(0.1)
-        print('\r/, see log to more information', end='')
-        time.sleep(0.1)

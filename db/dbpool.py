@@ -23,6 +23,8 @@ class Config(object):
 
     def __init__(self, config_filename='dbconfig.cnf'):
         file_path = os.path.join(os.path.dirname(__file__), config_filename)
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(file_path)
         self.cf = configparser.ConfigParser()
         self.cf.read(file_path)
 
@@ -77,20 +79,12 @@ class MyPymysqlPool(BasePymysqlPool):
 
     def __init__(self, logger, conf_name='MysqlDatabaseInfo'):
         """
+        :param logger: 日志对象
         :param conf_name: 配置文件中的配置章节名称
         """
         self.conf = Config().get_content(conf_name)
         super(MyPymysqlPool, self).__init__(**self.conf)
-        self._conn = self.__getConn()
-        self._cursor = self._conn.cursor()
-        self._logger = logger
-
-    def __getConn(self):
-        """
-        :return MySQLdb.connection
-        """
-        if MyPymysqlPool.__pool is None:
-            __pool = PooledDB(creator=pymysql,
+        self._pool = PooledDB(creator=pymysql,
                               mincached=1,
                               maxcached=20,
                               host=self.db_host,
@@ -101,7 +95,7 @@ class MyPymysqlPool(BasePymysqlPool):
                               use_unicode=True,
                               charset='utf8',
                               cursorclass=DictCursor)
-        return __pool.connection()
+        self._logger = logger
 
     def getAll(self, sql, param=None):
         """
@@ -110,17 +104,30 @@ class MyPymysqlPool(BasePymysqlPool):
         :return: result list(字典对象)/boolean查询到的结果集
         """
         result = None
+        _conn = self._pool.connection()
+        _cursor = _conn.cursor()
         try:
             if param is None:
-                count = self._cursor.execute(sql)
+                count = _cursor.execute(sql)
             else:
-                count = self._cursor.execute(sql, param)
+                count = _cursor.executemany(sql, param)
         except Exception as e:
-            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            if self._logger is not None:
+                self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            else:
+                print('SQL语句执行错误: %s - %s' % (sql, e))
+            _conn.rollback()
         else:
+            if self._logger is not None:
+                self._logger.debug('%s : get %d datas' % (__name__, count))
+            else:
+                print('%s : get %d datas' % (__name__, count))
             if count > 0:
-                result = self._cursor.fetchall()
+                result = _cursor.fetchall()
+            _conn.commit()
         finally:
+            _cursor.close()
+            _conn.close()
             return result
 
     def getOne(self, sql, param=None):
@@ -130,17 +137,30 @@ class MyPymysqlPool(BasePymysqlPool):
         :return: result list/boolean查询到的结果集
         """
         result = None
+        _conn = self._pool.connection()
+        _cursor = _conn.cursor()
         try:
             if param is None:
-                count = self._cursor.execute(sql)
+                count = _cursor.execute(sql)
             else:
-                count = self._cursor.execute(sql, param)
+                count = _cursor.executemany(sql, param)
         except Exception as e:
-            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            if self._logger is not None:
+                self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            else:
+                print('SQL语句执行错误: %s - %s' % (sql, e))
+            _conn.rollback()
         else:
+            if self._logger is not None:
+                self._logger.debug('%s : get %d datas' % (__name__, count))
+            else:
+                print('%s : get %d datas' % (__name__, count))
             if count > 0:
-                result = self._cursor.fetchone()
+                result = _cursor.fetchone()
+            _conn.commit()
         finally:
+            _cursor.close()
+            _conn.close()
             return result
 
     def getMany(self, sql, num, param=None):
@@ -151,17 +171,30 @@ class MyPymysqlPool(BasePymysqlPool):
         :return: result list/boolean查询到的结果集
         """
         result = None
+        _conn = self._pool.connection()
+        _cursor = _conn.cursor()
         try:
             if param is None:
-                count = self._cursor.execute(sql)
+                count = _cursor.execute(sql)
             else:
-                count = self._cursor.execute(sql, param)
+                count = _cursor.executemany(sql, param)
         except Exception as e:
-            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            if self._logger is not None:
+                self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            else:
+                print('SQL语句执行错误: %s - %s' % (sql, e))
+            _conn.rollback()
         else:
+            if self._logger is not None:
+                self._logger.debug('%s : get %d datas' % (__name__, count))
+            else:
+                print('%s : get %d datas' % (__name__, count))
             if count > 0:
-                result = self._cursor.fetchmany(num)
+                result = _cursor.fetchmany(num)
+            _conn.commit()
         finally:
+            _cursor.close()
+            _conn.close()
             return result
 
     def insertMany(self, sql, values):
@@ -171,12 +204,26 @@ class MyPymysqlPool(BasePymysqlPool):
         :return: count受影响的行数
         """
         count = 0
+        if not values:
+            return count
+        _conn = self._pool.connection()
+        _cursor = _conn.cursor()
         try:
-            count = self._cursor.executemany(sql, values)
+            count = _cursor.executemany(sql, values)
         except Exception as e:
-            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
-
-        return count
+            if self._logger is not None:
+                self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            else:
+                print('SQL语句执行错误: %s - %s' % (sql, e))
+            _conn.rollback()
+        else:
+            if self._logger is not None:
+                self._logger.debug('%s : insert %d datas' % (__name__, count))
+            _conn.commit()
+        finally:
+            _cursor.close()
+            _conn.close()
+            return count
 
     def __query(self, sql, param=None):
         """
@@ -185,15 +232,29 @@ class MyPymysqlPool(BasePymysqlPool):
         :return: count受影响行数
         """
         count = 0
+        _conn = self._pool.connection()
+        _cursor = _conn.cursor()
         try:
             if param is None:
-                count = self._cursor.execute(sql)
+                count = _cursor.execute(sql)
             else:
-                count = self._cursor.execute(sql, param)
+                count = _cursor.executemany(sql, param)
         except Exception as e:
-            self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
-
-        return count
+            if self._logger is not None:
+                self._logger.error('SQL语句执行错误: %s - %s' % (sql, e))
+            else:
+                print('SQL语句执行错误: %s - %s' % (sql, e))
+            _conn.rollback()
+        else:
+            if self._logger is not None:
+                self._logger.debug('SQL语句执行成功: %s - %d' % (sql, count))
+            else:
+                print('SQL语句执行成功: %s - %d' % (sql, count))
+            _conn.commit()
+        finally:
+            _cursor.close()
+            _conn.close()
+            return count
 
     def update(self, sql, param=None):
         """
@@ -219,47 +280,24 @@ class MyPymysqlPool(BasePymysqlPool):
         """
         return self.__query(sql, param)
 
-    def begin(self):
-        """
-        开启事务
-        """
-        try:
-            self._conn.autocommit(0)
-        except Exception as e:
-            self._logger.error('开启事务出错: %s' % e)
-
-    def end(self, option='commit'):
-        """
-        结束事务
-        """
-        try:
-            if option == 'commit':
-                self._conn.commit()
-            else:
-                self._conn.rollback()
-        except Exception as e:
-            self._logger.error('结束事务出错: %s' % e)
-
-    def dispose(self, end=1):
+    def dispose(self):
         """
         释放连接池资源
         """
         try:
-            if end == 1:
-                self.end('commit')
-            else:
-                self.end('rollback')
-            self._cursor.close()
-            self._conn.close()
+            self._pool.close()
         except Exception as e:
-            self._logger.error('释放资源出错: %s' % e)
+            if self._logger is not None:
+                self._logger.error('释放资源出错: %s' % e)
+            else:
+                print('释放资源出错: %s' % e)
 
 
 # 测试
 if __name__ == '__main__':
-    mysql = MyPymysqlPool('MysqlDatabaseInfo')
+    mysql = MyPymysqlPool(None, 'MysqlDatabaseInfo')
 
-    sqlAll = "select code,name from t_stock;"
+    sqlAll = "select code,name from t_stocks;"
     result = mysql.getAll(sqlAll)
     print(result)
 
