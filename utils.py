@@ -37,7 +37,7 @@ class RetryDecorator(object):
     def __call__(self, func) -> Any:
         def _wrapper(*args, **kwargs):
             cnt = 1
-            while cnt <= self.max_etry_num:
+            while cnt <= self.max_retry_num:
                 try:
                     ret = func(*args, **kwargs)
                 except Exception as e:
