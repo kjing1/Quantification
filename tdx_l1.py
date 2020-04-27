@@ -85,24 +85,19 @@ MAXTHREADS = 32
 
 
 class tdxL1Business(tdxApi):
-    def __init__(self, logger=None, logdir='.\\logs\\'):
+    def __init__(self, dbpool=None):
         super().__init__()
-        today = time.strftime('%Y%m%d', time.localtime(time.time()))
-        if logger is None:
-            logdir_exp = os.path.expanduser(logdir)
-            if not os.path.exists(logdir_exp):
-                os.makedirs(logdir_exp)
-            self.logger = log.init_logging(os.path.join(logdir_exp, '%s_%s.txt' % (__name__, today)), 'info')
+        if dbpool is None:
+            self.dbconn = MyPymysqlPool(None, 'MysqlDatabaseInfo')
         else:
-            self.logger = logger
-        self.dbconn = MyPymysqlPool(self.logger, 'MysqlDatabaseInfo')
+            self.dbconn = dbpool
         self.stock_list = []
-        """
-        fetched = self.dbconn.getAll('SELECT * FROM t_stocks')
-        if fetched is not None:
-            for data in fetched:
-                self.stock_list.append((EXCAHNGE2TDXMARKET[Exchange(data['exchange'])], data['ts_code'].split('.')[0]))
-        """
+        self.connect()
+        self.getStocksList()
+
+    def __del__(self):
+        self.release()
+        # self.dbconn.dispose()
 
     def insertTdxL1QuotesToDatabase(self, stock_code_list):
         sql = 'INSERT INTO t_tdx_l1 (market, code, active1, price, last_close, open, high, low, servertime, ' \
@@ -186,11 +181,17 @@ class tdxL1Business(tdxApi):
                     index += 1
 
 
-def runGetTdxL1(api, stock_list):
-    s = time.time()
-    api.insertTdxL1QuotesToDatabase(stock_list)
-    e = time.time()
-    api.logger.info('%d stocks L1 quoets with [%d] sec' % (len(stock_list), e - s))
+def runGetTdxL1(logger, dbpool, stock_list):
+    api = tdxL1Business(dbpool)
+    while True:
+        s = time.time()
+        api.insertTdxL1QuotesToDatabase(stock_list)
+        e = time.time()
+        logger.info('%d stocks L1 quoets with [%d] sec' % (len(stock_list), e - s))
+        if e-s > 60:
+            continue
+        else:
+            time.sleep(60-(e-s))
 
 
 def init_deamon():
@@ -231,39 +232,32 @@ def split_list(src_list, size, new_list=[]):
 
 if __name__ == '__main__':
     # init_deamon()
+    today = time.strftime('%Y%m%d', time.localtime(time.time()))
+    logdir_exp = os.path.expanduser('.\\logs\\')
+    if not os.path.exists(logdir_exp):
+        os.makedirs(logdir_exp)
+    logger = log.init_logging(os.path.join(logdir_exp, '%s_%s.txt' % (__name__ + 'tdx', today)), 'info')
     threads_list = []
-    api_list = []
 
-    for i in range(MAXTHREADS):
-        api = tdxL1Business(None)
-        api.connect()
-        api_list.append(api)
-    api_list[0].getStocksList()
-    s_list = split_list(api_list[0].stock_list, 80)
+    start = time.time()
+    dbpool = MyPymysqlPool(None, 'MysqlDatabaseInfo')
 
+    api = tdxL1Business(dbpool)
+    s_list = split_list(api.stock_list, 80)
+    all_stocks = len(api.stock_list)
+    del api
+
+    for stocks in s_list:
+        try:
+            t = threading.Thread(target=runGetTdxL1, args=(logger, dbpool, [stocks]))
+            t.start()
+        except Exception as e:
+            logger.error('线程启动失败 [%s-%d] with args:%s' % (t.getName(), t.ident, stocks))
+        threads_list.append(t)
+
+    print('All %d threads' % len(threads_list))
     while True:
-        s = time.time()
-        for stocks in s_list:
-            while len(threads_list) >= MAXTHREADS:
-                api_list[0].logger.warning('All %d threads wait...' % len(threads_list))
-                time.sleep(0.5)
-                for v in threads_list:
-                    if v.is_alive():
-                        continue
-                    else:
-                        threads_list.remove(v)
-            try:
-                t = threading.Thread(target=runGetTdxL1, args=(api_list[random.randint(0, 31)], [stocks]))
-                t.start()
-            except Exception as e:
-                api_list[0].logger.error('线程启动失败 [%s-%d] with args:%s' % (t.getName(), t.ident, stocks))
-            threads_list.append(t)
-        end = time.time() - s
-        api_list[0].logger.info('All %d stocks inserted with [%d] sec' % (len(api_list[0].stock_list), end))
-        if end > 60:
-            continue
-        else:
-            time.sleep(60 - end)
-
-    for i in range(MAXTHREADS):
-        api_list[i].release()
+        print('\r<%08d>s [\\], see log to more information' % (time.time() - start), end='')
+        time.sleep(0.1)
+        print('\r<%08d>s [/], see log to more information' % (time.time() - start), end='')
+        time.sleep(0.1)

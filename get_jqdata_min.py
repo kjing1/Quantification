@@ -21,7 +21,7 @@ class jqMinuteData(api.jqdataApi):
             self.logger = logger
         else:
             self.logger = log.init_logging(os.path.join(os.path.expanduser(logdir),
-                                                        'minute_%s_%s.txt' % (__name__, self.today)), 'info')
+                                                        '%s_%s.txt' % (__name__, self.today)), 'info')
         self.dbconn = dbpool.MyPymysqlPool(self.logger, 'MysqlDatabaseInfo')
 
         if self.login_status:
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     today = time.strftime('%Y%m%d', time.localtime(time.time()))
     # 240 * 300 * 15 * 200
     signal_15_years = 240 * 300 * 15
-    start = '2005-01-01'
+    start = '2019-01-01'
     end = '2020-04-30'
 
     for stock in api.stock_and_index_list:

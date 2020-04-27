@@ -3088,6 +3088,111 @@ class batchBusiness(tusApi):
         else:
             self.logger.error('[getTradeSummaryByDateRange] -> get None')
 
+    def insertQfqMinQuantToDatabaseByDateRange(self):
+        count = 0
+        err = 0
+        sql = 'INSERT INTO t_min_qfq (ts_code, trade_date, `open`, high, low, `close`, pre_close, `change`, ' \
+              'pct_chg, vol, ' \
+              'amount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        for stock_code in self.stock_list:
+            values = []
+            df = self.getSignalStockQFQMinQuantByDate(stock_code, self.start_date, self.end_date)
+            if df is not None:
+                for key, val in df.iterrows():
+                    values.append([val['ts_code'],
+                                   val['trade_date'],
+                                   val['open'],
+                                   val['high'],
+                                   val['low'],
+                                   val['close'],
+                                   val['pre_close'],
+                                   val['change'],
+                                   val['pct_chg'],
+                                   val['vol'],
+                                   val['amount']])
+                ret = self.dbconn.insertMany(sql, values)
+                if ret == len(values):
+                    self.logger.debug('%s insert %d datas to database' % (stock_code, ret))
+                    count += ret
+                else:
+                    self.logger.error('%s insert data to database get some error: %d' % (stock_code, ret))
+                    err += len(values)
+            else:
+                self.logger.error('[getSignalStockQFQMinQuantByDate] -> get None')
+            # tushare pro_bar interface limits 1000t/min
+            time.sleep(1)
+        self.logger.info('all insert %d datas to database and %d errors' % (count, err))
+
+    def insertHfqMinQuantToDatabaseByDateRange(self):
+        count = 0
+        err = 0
+        sql = 'INSERT INTO t_min_hfq (ts_code, trade_date, `open`, high, low, `close`, pre_close, `change`, ' \
+              'pct_chg, vol, ' \
+              'amount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        for stock_code in self.stock_list:
+            values = []
+            df = self.getSignalStockHFQMinQuantByDate(stock_code, self.start_date, self.end_date)
+            if df is not None:
+                for key, val in df.iterrows():
+                    values.append([val['ts_code'],
+                                   val['trade_date'],
+                                   val['open'],
+                                   val['high'],
+                                   val['low'],
+                                   val['close'],
+                                   val['pre_close'],
+                                   val['change'],
+                                   val['pct_chg'],
+                                   val['vol'],
+                                   val['amount']])
+                ret = self.dbconn.insertMany(sql, values)
+                if ret == len(values):
+                    self.logger.debug('%s insert %d datas to database' % (stock_code, ret))
+                    count += ret
+                else:
+                    self.logger.error('%s insert data to database get some error: %d' % (stock_code, ret))
+                    err += len(values)
+            else:
+                self.logger.error('[getSignalStockHFQMinQuantByDate] -> get None')
+            # tushare pro_bar interface limits 1000t/min
+            time.sleep(1)
+        self.logger.info('all insert %d datas to database and %d errors' % (count, err))
+
+    def insertMinQuantToDatabaseByDateRange(self):
+        count = 0
+        err = 0
+        sql = 'INSERT INTO t_min (ts_code, trade_date, `open`, high, low, `close`, pre_close, `change`, ' \
+              'pct_chg, vol, ' \
+              'amount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        for stock_code in self.stock_list:
+            values = []
+            df = self.getSignalStockMinQuantByDate(stock_code, self.start_date, self.end_date)
+            if df is not None:
+                for key, val in df.iterrows():
+                    values.append([val['ts_code'],
+                                   val['trade_date'],
+                                   val['open'],
+                                   val['high'],
+                                   val['low'],
+                                   val['close'],
+                                   val['pre_close'],
+                                   val['change'],
+                                   val['pct_chg'],
+                                   val['vol'],
+                                   val['amount']])
+                ret = self.dbconn.insertMany(sql, values)
+                if ret == len(values):
+                    self.logger.debug('%s insert %d datas to database' % (stock_code, ret))
+                    count += ret
+                else:
+                    self.logger.error('%s insert data to database get some error: %d' % (stock_code, ret))
+                    err += len(values)
+            else:
+                self.logger.error('[getSignalStockMinQuantByDate] -> get None')
+            # tushare pro_bar interface limits 1000t/min
+            time.sleep(1)
+        self.logger.info('all insert %d datas to database and %d errors' % (count, err))
+
     def methods(self):
         return list(filter(lambda m: not m.startswith("__") and not m.endswith("__") and callable(getattr(self, m)), dir(self)))
 
@@ -3108,6 +3213,12 @@ def parse_arguments(argv):
     parser.add_argument('--qfq_weekly_quotation', type=bool,
                         help='Get qfq weekly quotation from tushare, default: False', default=False)
     parser.add_argument('--hfq_weekly_quotation', type=bool,
+                        help='Get hfq weekly quotation from tushare, default: False', default=False)
+    parser.add_argument('--hfq_min_quotation', type=bool,
+                        help='Get hfq weekly quotation from tushare, default: False', default=False)
+    parser.add_argument('--qfq_min_quotation', type=bool,
+                        help='Get hfq weekly quotation from tushare, default: False', default=False)
+    parser.add_argument('--min_quotation', type=bool,
                         help='Get hfq weekly quotation from tushare, default: False', default=False)
     parser.add_argument('--qfq_monthly_quotation', type=bool,
                         help='Get qfq monthly quotation from tushare, default: False', default=False)
@@ -3183,7 +3294,7 @@ def parse_arguments(argv):
                         help='trade date, default: today', default='')
     parser.add_argument('--retry', type=int,
                         help='Exception retry times, default: 3', default=3)
-    parser.add_argument('--intv', type=int,
+    parser.add_argument('--intv', type=float,
                         help='interval, default 0.5s', default=0.5)
     return parser.parse_args(argv)
 
@@ -3229,6 +3340,12 @@ def runForDateRange(args):
                         intv=args.intv)
 
     # 线程
+    if args.hfq_min_quotation:
+        addTask(threads_list, logger, api.insertHfqMinQuantToDatabaseByDateRange, ())
+    if args.qfq_min_quotation:
+        addTask(threads_list, logger, api.insertQfqMinQuantToDatabaseByDateRange, ())
+    if args.min_quotation:
+        addTask(threads_list, logger, api.insertMinQuantToDatabaseByDateRange, ())
     if args.daily_quotation:
         addTask(threads_list, logger, api.insertDailyQuantToDatabaseByDateRange, ())
     if args.weekly_quotation:
@@ -3334,12 +3451,18 @@ def runForDate(args):
                         intv=args.intv)
 
     # 更新基础数据
-    api.insertCompanyBaseInformationToDatabaseByExchange()
-    api.insertCompanyManagersToDatabase()
-    api.insertStockBaseInformationToDatabase()
-    api.insertIndexBaseInformationToDatabase()
+    # api.insertCompanyBaseInformationToDatabaseByExchange()
+    # api.insertCompanyManagersToDatabase()
+    # api.insertStockBaseInformationToDatabase()
+    # api.insertIndexBaseInformationToDatabase()
 
     # 线程
+    if args.hfq_min_quotation:
+        addTask(threads_list, logger, api.insertHfqMinQuantToDatabaseByDateRange, ())
+    if args.qfq_min_quotation:
+        addTask(threads_list, logger, api.insertQfqMinQuantToDatabaseByDateRange, ())
+    if args.min_quotation:
+        addTask(threads_list, logger, api.insertMinQuantToDatabaseByDateRange, ())
     if args.daily_quotation:
         addTask(threads_list, logger, api.insertDailyQuantToDatabaseByDate, ())
     if args.weekly_quotation:
@@ -3432,8 +3555,8 @@ if __name__ == '__main__':
     # 同步指数、财务等行情: --limit_price True --limit_up True --limit_down True
     # --money_flow True --trader_cal True --profit True --big_trade True
     # --balance_sheet True --cash_flow True --exp_news True --fin_indicator True --index_daily True --index_weekly
-    # True --index_monthly True --index_daily_ind True --startdate 20100101 --enddate 20200414
-    # runForDateRange(parse_arguments(sys.argv[1:]))
+    # True --index_monthly True --index_daily_ind True --hfq_min_quotation True --qfq_min_quotation True --min_quotation True --startdate 20100101 --enddate 20200414
+    runForDateRange(parse_arguments(sys.argv[1:]))
     # 每日同步: --daily_quotation True --weekly_quotation True --monthly_quotation True --qfq_daily_quotation True
     # --hfq_daily_quotation True --qfq_weekly_quotation True --hfq_weekly_quotation True --qfq_monthly_quotation True
     # --hfq_monthly_quotation True --daily_index True -adj_factor True --index_base True --limit_up True --limit_down
@@ -3442,4 +3565,4 @@ if __name__ == '__main__':
     # --top_list_detail True --concept_stocks True --big_trade True --index_daily True --index_weekly True
     # --index_monthly True --index_daily_ind True --sw_class_stock True --trade_sum True --logdir /opt/ --loglevel
     # info --startdate '' --enddate '' --trade_date '' --retry 5 --intv 0.5
-    runForDate(parse_arguments(sys.argv[1:]))
+    # runForDate(parse_arguments(sys.argv[1:]))

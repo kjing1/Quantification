@@ -86,7 +86,7 @@ class MyPymysqlPool(BasePymysqlPool):
         super(MyPymysqlPool, self).__init__(**self.conf)
         self._pool = PooledDB(creator=pymysql,
                               mincached=1,
-                              maxcached=20,
+                              maxcached=64,
                               host=self.db_host,
                               port=self.db_port,
                               user=self.db_user,
