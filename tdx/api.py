@@ -15,21 +15,17 @@ class tdxApi:
     def __init__(self):
         self.ipset = [(v[1], v[2]) for v in hq_hosts]
         random.shuffle(self.ipset)
-        self.ipset5 = self.ipset[:5]
-        self.ippool = AvailableIPPool(TdxHq_API, self.ipset5)
-        self.primary_ip, self.hot_backup_ip = self.ippool.sync_get_top_n(2)
-        # self.api = TdxHqPool_API(TdxHq_API, self.ippool)
+        self.ippool = AvailableIPPool(TdxHq_API, self.ipset)
+        self.primary_ip, _ = self.ippool.sync_get_top_n(2)
         self.api = TdxHq_API(multithread=True, heartbeat=True, auto_retry=True)
 
     def connect(self):
-        # self.api.connect(self.primary_ip, self.hot_backup_ip)
         self.api.connect(self.primary_ip[0], self.primary_ip[1])
 
     def release(self):
         self.api.disconnect()
 
     def getQuotes(self, stock_list):
-        # df = self.api1.to_df(self.api.get_security_quotes(stock_list))
         datas = self.api.get_security_quotes(stock_list)
         if datas is None:
             return None

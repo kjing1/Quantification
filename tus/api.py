@@ -411,6 +411,42 @@ class tusApi:
                        ts_code=stock_code, start_date=start_date, end_date=end_date, adj='hfq', asset='E', freq='W')
         return df
 
+    def getSignalStockQFQMinQuantByDate(self, stock_code, start_date, end_date):
+        """
+        获取指定股票对应时间段的前复权分钟行情
+        :param stock_code: 股票代码, 例如: 000001.SZ
+        :param start_date: 开始日期, 格式: 20200101
+        :param end_date: 结束日期, 格式: 20200101
+        :return: 前复权周行情df
+        """
+        df = funcRetry(ts.pro_bar, self.retry, self.intv,
+                       ts_code=stock_code, start_date=start_date, end_date=end_date, adj='qfq', asset='E', freq='1min')
+        return df
+
+    def getSignalStockHFQMinQuantByDate(self, stock_code, start_date, end_date):
+        """
+        获取指定股票对应时间段的后复权分钟行情
+        :param stock_code: 股票代码, 例如: 000001.SZ
+        :param start_date: 开始日期, 格式: 20200101
+        :param end_date: 结束日期, 格式: 20200101
+        :return: 后复权周行情df
+        """
+        df = funcRetry(ts.pro_bar, self.retry, self.intv,
+                       ts_code=stock_code, start_date=start_date, end_date=end_date, adj='hfq', asset='E', freq='1min')
+        return df
+
+    def getSignalStockMinQuantByDate(self, stock_code, start_date, end_date):
+        """
+        获取指定股票对应时间段的后复权分钟行情
+        :param stock_code: 股票代码, 例如: 000001.SZ
+        :param start_date: 开始日期, 格式: 20200101
+        :param end_date: 结束日期, 格式: 20200101
+        :return: 后复权周行情df
+        """
+        df = funcRetry(ts.pro_bar, self.retry, self.intv,
+                       ts_code=stock_code, start_date=start_date, end_date=end_date, adj=None, asset='E', freq='1min')
+        return df
+
     def getSignalStockQFQMonthlyQuantByDate(self, stock_code, start_date, end_date):
         """
         获取指定股票对应时间段的前复权月行情
@@ -2022,6 +2058,8 @@ class tusApi:
 
 if __name__ == '__main__':
     api = tusApi(MYTOKEN)
+    print(api.getSignalStockMinQuantByDate('000001.SZ', '20200423', '20200423'))
+    exit()
     print(api.getSignalIndexDailyIndicatorByDate('000001.SH', '20100101', '20200414'))
     exit()
     print(api.getSignalStockBalanceSheetByDate('000001.SZ', '20100101', '20200414'))
