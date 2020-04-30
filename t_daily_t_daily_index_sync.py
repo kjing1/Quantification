@@ -81,9 +81,7 @@ def index_sync(logger, conn, stocks_list, tradedate=''):
 
 
 if __name__ == '__main__':
-    date_list = ['20200311', '20200312', '20200313', '20200314', '20200315', '20200316', '20200317',
-                 '20200318', '20200319', '20200320', '20200321', '20200322', '20200323', '20200324',
-                 '20200325', '20200326', '20200327', '20200328', '20200329', '20200330']
+    date_list = []
     stocks_list = []
     threads_list = []
     cnt = 0
@@ -99,6 +97,9 @@ if __name__ == '__main__':
     # 获取股票ts代码
     for d in conn.getAll('select ts_code from t_stocks'):
         stocks_list.append(d['ts_code'])
+
+    for d in conn.getAll('select cal_date from t_exchange_trade_cal where cal_date>"20200329" and is_open=1'):
+        date_list.append(d['cal_date'])
 
     for d in date_list:
         index_sync(logger, conn, stocks_list, d)
