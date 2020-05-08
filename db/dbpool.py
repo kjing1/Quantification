@@ -225,7 +225,7 @@ class MyPymysqlPool(BasePymysqlPool):
             _conn.close()
             return count
 
-    def __query(self, sql, param=None):
+    def common_execute(self, sql, param=None):
         """
         :param sql: 要查询的SQL语句
         :param param: SQL语句的参数
@@ -262,7 +262,7 @@ class MyPymysqlPool(BasePymysqlPool):
         :param param: 要更新的值 tuple/list
         :return: count 受影响的行数
         """
-        return self.__query(sql, param)
+        return self.common_execute(sql, param)
 
     def insert(self, sql, param=None):
         """
@@ -270,7 +270,7 @@ class MyPymysqlPool(BasePymysqlPool):
         :param param: 要更新的  值 tuple/list
         :return: count受影响的行数
         """
-        return self.__query(sql, param)
+        return self.common_execute(sql, param)
 
     def delete(self, sql, param=None):
         """
@@ -278,7 +278,7 @@ class MyPymysqlPool(BasePymysqlPool):
         :param param: 要删除的条件 值 tuple/list
         :return: count受影响的行数
         """
-        return self.__query(sql, param)
+        return self.common_execute(sql, param)
 
     def dispose(self):
         """

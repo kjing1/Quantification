@@ -7,6 +7,7 @@
 import jqdatasdk as jq
 from utils import RetryDecorator
 import pandas as pd
+import time
 
 
 class jqdataApi:
@@ -46,6 +47,15 @@ class jqdataApi:
                                 count=None,
                                 panel=False,
                                 fill_paused=True)
+
+        df = __local_run()
+        return df.astype(object).where(pd.notnull(df), None)
+
+    def getSignalStock5DaysQuotation(self, stock_code, count=1000, fq=None):
+        @RetryDecorator(self.retry, self.interval)
+        def __local_run():
+            return jq.get_bars(stock_code, count, unit='5m', fields=['date', 'open', 'high', 'low', 'close'])
+
         df = __local_run()
         return df.astype(object).where(pd.notnull(df), None)
 
@@ -53,6 +63,7 @@ class jqdataApi:
         @RetryDecorator(self.retry, self.interval)
         def __local_run():
             return jq.get_all_securities(types=['stock', 'index'])
+
         df = __local_run()
         return df.astype(object).where(pd.notnull(df), None)
 
@@ -69,6 +80,13 @@ class jqdataApi:
 
 
 if __name__ == '__main__':
-    api = jqdataApi('18780098283', 'Kj_459951958')
-    print(api.getCount())
+    api = jqdataApi('18780098283', 'Kangjing111')
+    today = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
 
+    """
+    df = api.getSignalStockMinuteQuotationByDateRange('000001.XSHE', '2020-05-07', today)
+    for key, val in df.iterrows():
+        print(val)
+    """
+    df = api.getSignalStock5DaysQuotation('000001.XSHE', 1200)
+    print(df)

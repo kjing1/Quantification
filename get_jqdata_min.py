@@ -30,9 +30,35 @@ class jqMinuteData(api.jqdataApi):
             self.stock_and_index_list = []
 
     def insertQFQMinuteQuotationByDateRange(self, stock, start_date, end_date):
-        sql = 'INSERT INTO t_min_qfq (ts_code, timestamp, `open`,' \
-              '`close`, low, high, volume, money, factor, high_limit, low_limit, avg, pre_close, paused, open_interest)' \
-              ' VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        table_name = 't_min_qfq_%s' % stock.split('.')[0]
+
+        def __create_table():
+            ret = self.dbconn.getAll(
+                'select table_name from information_schema.tables where table_schema="quantification" and '
+                'table_type="base table" and table_name="%s";' % table_name
+            )
+            if ret is None:
+                return self.dbconn.common_execute(
+                    'CREATE TABLE `%s` (`ts_code` varchar(128) NOT NULL COMMENT "tushare代码",`timestamp` '
+                    'varchar(128) NOT NULL COMMENT "交易日期",`open` varchar(128) DEFAULT NULL COMMENT "开盘价",'
+                    '`close` varchar(128) DEFAULT NULL,`low` varchar(128) DEFAULT NULL,`high` varchar(128) '
+                    'DEFAULT NULL,`volume` varchar(128) DEFAULT NULL,`money` varchar(128) DEFAULT NULL,'
+                    '`factor` varchar(128) DEFAULT NULL,`high_limit` varchar(128) DEFAULT NULL,`low_limit` '
+                    'varchar(128) DEFAULT NULL,`avg` varchar(128) DEFAULT NULL,`pre_close` varchar(128) DEFAULT '
+                    'NULL,`paused` varchar(128) DEFAULT NULL,`open_interest` varchar(128) DEFAULT NULL,'
+                    'PRIMARY KEY (`ts_code`,`timestamp`) USING BTREE,KEY `UQ_TS_CODE` (`ts_code`),'
+                    'KEY `UQ_TRADE_DATE` (`timestamp`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;' % table_name
+                )
+            return len(ret)
+
+        if __create_table() < 1:
+            self.logger.error('Not found table: %s or create it error' % table_name)
+            return
+
+        sql1 = 'INSERT INTO %s (ts_code, timestamp, `open`,' % table_name
+        sql = sql1 + '`close`, low, high, volume, money, factor, high_limit, low_limit, avg, pre_close, paused, ' \
+                     'open_interest)' \
+                     ' VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         values = []
         df = self.getSignalStockMinuteQuotationByDateRange(stock, start_date, end_date, fq='pre')
         if df is not None:
@@ -62,12 +88,12 @@ class jqMinuteData(api.jqdataApi):
 
 
 if __name__ == '__main__':
-    api = jqMinuteData('18780098283', 'Kj_459951958', None)
+    api = jqMinuteData('18780098283', 'Kangjing111', None)
     today = time.strftime('%Y%m%d', time.localtime(time.time()))
     # 240 * 300 * 15 * 200
-    signal_15_years = 240 * 300 * 15
+    signal_15_years = 240 * 300
     start = '2019-01-01'
-    end = '2020-04-30'
+    end = '2020-05-07'
 
     for stock in api.stock_and_index_list:
         while True:

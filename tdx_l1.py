@@ -241,6 +241,19 @@ if __name__ == '__main__':
 
     start = time.time()
     dbpool = MyPymysqlPool(None, 'MysqlDatabaseInfo')
+    ret = dbpool.getAll('select table_name from information_schema.tables where table_schema="quantification" and table_type="base table" and table_name="t_min_qf";')
+    print(ret)
+    exit()
+    dbpool.common_execute('CREATE TABLE `t_min_qfq_000001` (`ts_code` varchar(128) NOT NULL COMMENT "tushare代码",`timestamp` '
+                          'varchar(128) NOT NULL COMMENT "交易日期",`open` varchar(128) DEFAULT NULL COMMENT "开盘价",'
+                          '`close` varchar(128) DEFAULT NULL,`low` varchar(128) DEFAULT NULL,`high` varchar(128) '
+                          'DEFAULT NULL,`volume` varchar(128) DEFAULT NULL,`money` varchar(128) DEFAULT NULL,'
+                          '`factor` varchar(128) DEFAULT NULL,`high_limit` varchar(128) DEFAULT NULL,`low_limit` '
+                          'varchar(128) DEFAULT NULL,`avg` varchar(128) DEFAULT NULL,`pre_close` varchar(128) DEFAULT '
+                          'NULL,`paused` varchar(128) DEFAULT NULL,`open_interest` varchar(128) DEFAULT NULL,'
+                          'PRIMARY KEY (`ts_code`,`timestamp`) USING BTREE,KEY `UQ_TS_CODE` (`ts_code`),'
+                          'KEY `UQ_TRADE_DATE` (`timestamp`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;')
+    exit()
 
     api = tdxL1Business(dbpool)
     s_list = split_list(api.stock_list, 80)
